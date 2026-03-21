@@ -66,6 +66,10 @@ The Share Extension cannot access SwiftData directly (memory limit + separate pr
 
 **`iOS/project.yml`** is the xcodegen spec. Edit this to add files/capabilities/targets, then regenerate the `.xcodeproj`.
 
+### Docker / Railway
+
+In `Dockerfile` CMD, never use `npx <package>` for locally installed packages — use `node_modules/.bin/<package>` directly. `npx` in npm 11 can download the latest version from the registry instead of using the local installation, which caused `npx prisma` to pull Prisma v7 instead of the pinned v5, crashing the container.
+
 ### Environment
 
 `backend/.env` (gitignored, copy from `.env.example`):
