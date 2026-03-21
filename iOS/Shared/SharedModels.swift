@@ -4,6 +4,7 @@ import Foundation
 // These are NOT SwiftData models — they are plain Codable structs for JSON transport.
 
 struct RecipeResponse: Codable {
+    let id: String?
     let title: String
     let platform: String
     let sourceURL: String
@@ -21,6 +22,7 @@ struct RecipeResponse: Codable {
     let rawCaption: String?
 
     enum CodingKeys: String, CodingKey {
+        case id
         case title
         case platform
         case sourceURL = "source_url"

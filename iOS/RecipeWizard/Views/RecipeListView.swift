@@ -3,6 +3,7 @@ import SwiftData
 
 struct RecipeListView: View {
     @Environment(\.modelContext) private var context
+    @Environment(AuthService.self) private var auth
     @Query(sort: \Recipe.createdAt, order: .reverse) private var recipes: [Recipe]
 
     @State private var viewModel = RecipeListViewModel()
@@ -34,6 +35,12 @@ struct RecipeListView: View {
                         Image(systemName: "plus")
                     }
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Sign Out", role: .destructive) {
+                        auth.signOut()
+                    }
+                    .font(.footnote)
+                }
             }
             .searchable(text: $viewModel.searchText, prompt: "Search recipes…")
             .sheet(isPresented: $viewModel.isAddingURL) {
@@ -41,9 +48,11 @@ struct RecipeListView: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            Task { await viewModel.syncRecipesFromAPI(context: context) }
             viewModel.processPendingRecipes(context: context)
         }
         .task {
+            await viewModel.syncRecipesFromAPI(context: context)
             viewModel.processPendingRecipes(context: context)
         }
     }

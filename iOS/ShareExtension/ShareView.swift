@@ -124,6 +124,9 @@ struct ShareView: View {
             stage = .done
             try? await Task.sleep(for: .seconds(1.2))
             onDismiss()
+        } catch APIError.unauthorized {
+            stage = .failed
+            errorMessage = "Sign in to RecipeWizard first, then try sharing again."
         } catch {
             stage = .failed
             errorMessage = error.localizedDescription

@@ -6,6 +6,11 @@ options:
   xcodeVersion: "15.0"
   createIntermediateGroups: true
 
+packages:
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    from: "7.0.0"
+
 settings:
   base:
     SWIFT_VERSION: "5.9"
@@ -40,7 +45,15 @@ targets:
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
         NSPhotoLibraryUsageDescription: "RecipeWizard uses photos to identify recipes."
-    dependencies: []
+        GIDClientID: "313197419268-80pj3e1pq21imlofmpvkutrgaj9or1fj.apps.googleusercontent.com"
+        CFBundleURLTypes:
+          - CFBundleURLSchemes:
+              - "com.googleusercontent.apps.313197419268-80pj3e1pq21imlofmpvkutrgaj9or1fj"
+    dependencies:
+      - package: GoogleSignIn
+        product: GoogleSignIn
+      - package: GoogleSignIn
+        product: GoogleSignInSwift
 
   ShareExtension:
     type: app-extension
@@ -73,3 +86,5 @@ targets:
       - embed: false
         target: RecipeWizard
         link: false
+      - package: GoogleSignIn
+        product: GoogleSignIn

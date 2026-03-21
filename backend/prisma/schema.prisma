@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  googleId  String   @unique @map("google_id")
+  email     String   @unique
+  name      String
+  avatarUrl String?  @map("avatar_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  recipes   Recipe[]
+
+  @@map("users")
+}
+
+model Recipe {
+  id                   String       @id @default(cuid())
+  userId               String       @map("user_id")
+  user                 User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title                String
+  platform             String
+  sourceUrl            String       @map("source_url")
+  thumbnailUrl         String?      @map("thumbnail_url")
+  thumbnailBase64      String?      @map("thumbnail_base64") @db.Text
+  description          String?      @db.Text
+  cookTimeMinutes      Int?         @map("cook_time_minutes")
+  prepTimeMinutes      Int?         @map("prep_time_minutes")
+  servings             Int?
+  difficulty           String?
+  tags                 String[]
+  extractionConfidence Float        @default(0) @map("extraction_confidence")
+  rawCaption           String?      @map("raw_caption") @db.Text
+  createdAt            DateTime     @default(now()) @map("created_at")
+  updatedAt            DateTime     @updatedAt @map("updated_at")
+  ingredients          Ingredient[]
+  steps                Step[]
+
+  @@map("recipes")
+}
+
+model Ingredient {
+  id        String  @id @default(cuid())
+  recipeId  String  @map("recipe_id")
+  recipe    Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  name      String
+  quantity  String?
+  unit      String?
+  notes     String?
+  sortOrder Int     @default(0) @map("sort_order")
+
+  @@map("ingredients")
+}
+
+model Step {
+  id              String  @id @default(cuid())
+  recipeId        String  @map("recipe_id")
+  recipe          Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  stepNumber      Int     @map("step_number")
+  instruction     String  @db.Text
+  durationMinutes Int?    @map("duration_minutes")
+
+  @@map("steps")
+}

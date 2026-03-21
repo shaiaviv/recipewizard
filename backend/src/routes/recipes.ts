@@ -4,10 +4,12 @@ import { extractVideoMetadata } from "../services/videoExtractor";
 import { extractRecipeFromVideo } from "../services/claudeService";
 import { downloadAndEncodeImage } from "../services/imageService";
 import { isSupportedUrl, extractUrlFromText } from "../utils/urlValidator";
+import { requireAuth } from "../middleware/auth";
+import { saveRecipeForUser } from "../services/recipeService";
 
 const router = Router();
 
-router.post("/extract", async (req: Request, res: Response) => {
+router.post("/extract", requireAuth, async (req: Request, res: Response) => {
   const body = req.body as ExtractRequest;
   let url = body.url?.trim();
 
@@ -71,14 +73,21 @@ router.post("/extract", async (req: Request, res: Response) => {
     return;
   }
 
-  res.json({
+  const responsePayload = {
     ...recipeData,
     source_url: url,
     platform: metadata.platform,
     thumbnail_url: metadata.thumbnail_url,
     thumbnail_base64: thumbnailBase64,
     raw_caption: metadata.description.slice(0, 1000) || null,
+  };
+
+  // Save to DB for the authenticated user (non-blocking)
+  saveRecipeForUser(req.user!.userId, responsePayload).catch((err) => {
+    console.error("[recipes] Failed to save recipe to DB:", err);
   });
+
+  res.json(responsePayload);
 });
 
 export default router;

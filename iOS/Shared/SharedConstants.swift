@@ -13,4 +13,10 @@ enum SharedConstants {
 
     /// UserDefaults key for pending recipes written by the Share Extension
     static let pendingRecipesKey = "pendingRecipes"
+
+    /// UserDefaults key for the JWT token (stored in App Group so Share Extension can read it)
+    static let jwtTokenKey = "jwtToken"
+
+    /// Google OAuth iOS client ID
+    static let googleClientID = "313197419268-80pj3e1pq21imlofmpvkutrgaj9or1fj.apps.googleusercontent.com"
 }

@@ -17,6 +17,31 @@ final class RecipeListViewModel {
         case alphabetical = "A–Z"
     }
 
+    // MARK: - Sync from API
+
+    @MainActor
+    func syncRecipesFromAPI(context: ModelContext) async {
+        do {
+            let serverRecipes = try await RecipeAPIService.shared.fetchUserRecipes()
+            for response in serverRecipes {
+                let sourceURL = response.sourceURL
+                let descriptor = FetchDescriptor<Recipe>(
+                    predicate: #Predicate { $0.sourceURL == sourceURL }
+                )
+                let existing = try? context.fetch(descriptor).first
+                if existing == nil {
+                    let recipe = Recipe(from: response)
+                    context.insert(recipe)
+                }
+            }
+            try? context.save()
+        } catch APIError.unauthorized {
+            AuthService.shared.signOut()
+        } catch {
+            print("[RecipeListViewModel] API sync failed: \(error)")
+        }
+    }
+
     // MARK: - Pending recipes from Share Extension
 
     @MainActor
@@ -30,8 +55,15 @@ final class RecipeListViewModel {
 
         for data in pendingData {
             guard let response = try? JSONDecoder().decode(RecipeResponse.self, from: data) else { continue }
-            let recipe = Recipe(from: response)
-            context.insert(recipe)
+            let sourceURL = response.sourceURL
+            let descriptor = FetchDescriptor<Recipe>(
+                predicate: #Predicate { $0.sourceURL == sourceURL }
+            )
+            let existing = try? context.fetch(descriptor).first
+            if existing == nil {
+                let recipe = Recipe(from: response)
+                context.insert(recipe)
+            }
         }
 
         try? context.save()
@@ -57,6 +89,8 @@ final class RecipeListViewModel {
             try context.save()
             isAddingURL = false
             pendingURL = ""
+        } catch APIError.unauthorized {
+            AuthService.shared.signOut()
         } catch {
             extractionError = error.localizedDescription
         }

@@ -1,9 +1,11 @@
 import SwiftUI
 import SwiftData
+import GoogleSignIn
 
 @main
 struct RecipeWizardApp: App {
     let container: ModelContainer
+    private let auth = AuthService.shared
 
     init() {
         let schema = Schema([Recipe.self, Ingredient.self, RecipeStep.self])
@@ -15,12 +17,23 @@ struct RecipeWizardApp: App {
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }
+        auth.configure()
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .modelContainer(container)
+            Group {
+                if auth.isAuthenticated {
+                    ContentView()
+                        .modelContainer(container)
+                } else {
+                    LoginView()
+                }
+            }
+            .environment(auth)
+            .onOpenURL { url in
+                GIDSignIn.sharedInstance.handle(url)
+            }
         }
     }
 }
