@@ -1,0 +1,18 @@
+# Backend
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/cookies.txt
+
+# iOS
+iOS/*.xcworkspace
+iOS/xcuserdata/
+iOS/**/*.xcuserstate
+iOS/build/
+iOS/DerivedData/
+iOS/**/.DS_Store
+*.xcbkptlist
+
+# General
+.DS_Store
+*.log
