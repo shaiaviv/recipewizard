@@ -5,7 +5,7 @@ enum SharedConstants {
     static let appGroupID = "group.com.recipewizard.app"
 
     /// Backend URL — change to your Railway URL for production builds
-    static let backendURL = "http://localhost:8000"
+    static let backendURL = "https://recipewizard-production-9be6.up.railway.app"
 
     /// Set to true once you have an Apple Developer account and CloudKit is configured
     static let cloudKitEnabled = false
