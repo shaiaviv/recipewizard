@@ -18,7 +18,6 @@ COPY package*.json ./
 RUN npm install -g npm@11 && npm ci
 
 COPY prisma ./prisma
-COPY prisma.config.ts ./
 COPY tsconfig.json ./
 COPY src ./src
 RUN npx prisma generate
