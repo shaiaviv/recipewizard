@@ -1,15 +1,7 @@
-FROM node:20-slim
+FROM node:20-slim AS builder
 
-# Install yt-dlp, ffmpeg, and libssl (required by Prisma query engine)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 \
-    ffmpeg \
-    curl \
-    ca-certificates \
-    libssl-dev \
-    && update-ca-certificates \
-    && curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp \
-    && chmod a+rx /usr/local/bin/yt-dlp \
+    openssl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -18,10 +10,39 @@ COPY package*.json ./
 RUN npm install -g npm@11 && npm ci
 
 COPY prisma ./prisma
+RUN npx prisma generate
+
 COPY tsconfig.json ./
 COPY src ./src
-RUN npx prisma generate
-RUN npm run build && npm prune --omit=dev
+RUN npm run build
+
+
+FROM node:20-slim AS runner
+
+# Install yt-dlp, ffmpeg, and openssl (for Prisma)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    ffmpeg \
+    curl \
+    ca-certificates \
+    openssl \
+    && update-ca-certificates \
+    && curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp \
+    && chmod a+rx /usr/local/bin/yt-dlp \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install -g npm@11 && npm ci --omit=dev
+
+# Copy Prisma schema + generated client (must come after npm ci so it overrides the stub)
+COPY prisma ./prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
+
+# Copy compiled app
+COPY --from=builder /app/dist ./dist
 
 ENV NODE_ENV=production
 
