@@ -1,16 +1,9 @@
 FROM node:20-slim AS builder
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    openssl \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
 COPY package*.json ./
 RUN npm install -g npm@11 && npm ci
-
-COPY prisma ./prisma
-RUN npx prisma generate
 
 COPY tsconfig.json ./
 COPY src ./src
@@ -36,10 +29,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install -g npm@11 && npm ci --omit=dev
 
-# Copy Prisma schema + generated client (must come after npm ci so it overrides the stub)
+# Generate Prisma client for the actual runtime platform (avoids cross-arch binary issues)
 COPY prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
+RUN npx prisma generate
 
 # Copy compiled app
 COPY --from=builder /app/dist ./dist
