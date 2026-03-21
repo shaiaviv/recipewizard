@@ -40,4 +40,4 @@ ENV NODE_ENV=production
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "node --stack-trace-limit=50 node_modules/.bin/prisma migrate deploy && node --stack-trace-limit=50 dist/index.js"]
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/index.js"]
