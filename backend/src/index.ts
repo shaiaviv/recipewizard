@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import healthRouter from "./routes/health";
 import recipesRouter from "./routes/recipes";
 import authRouter from "./routes/auth";
@@ -26,7 +26,7 @@ app.use(
   rateLimit({
     windowMs: 60 * 1000,
     max: 60,
-    keyGenerator: (req) => req.user?.userId ?? req.ip ?? "anonymous",
+    keyGenerator: (req) => req.user?.userId ?? ipKeyGenerator(req.ip ?? "anonymous"),
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: "Too many requests, please slow down" },
