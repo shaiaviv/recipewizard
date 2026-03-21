@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { VideoMetadata } from "../types/response.js";
+import { VideoMetadata } from "../types/response";
 
 const SYSTEM_PROMPT = `You are a culinary AI assistant that extracts structured recipe data from social media video metadata.
 You receive video titles, descriptions/captions, and sometimes a thumbnail image.

@@ -1,6 +1,6 @@
 import YTDlpWrap from "yt-dlp-wrap";
 import path from "path";
-import { VideoMetadata } from "../types/response.js";
+import { VideoMetadata } from "../types/response";
 
 const ytDlp = new YTDlpWrap();
 

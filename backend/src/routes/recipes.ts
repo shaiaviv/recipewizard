@@ -1,9 +1,9 @@
 import { Router, Request, Response } from "express";
-import { ExtractRequest } from "../types/request.js";
-import { extractVideoMetadata } from "../services/videoExtractor.js";
-import { extractRecipeFromVideo } from "../services/claudeService.js";
-import { downloadAndEncodeImage } from "../services/imageService.js";
-import { isSupportedUrl, extractUrlFromText } from "../utils/urlValidator.js";
+import { ExtractRequest } from "../types/request";
+import { extractVideoMetadata } from "../services/videoExtractor";
+import { extractRecipeFromVideo } from "../services/claudeService";
+import { downloadAndEncodeImage } from "../services/imageService";
+import { isSupportedUrl, extractUrlFromText } from "../utils/urlValidator";
 
 const router = Router();
 

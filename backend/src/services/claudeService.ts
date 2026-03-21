@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { buildExtractionPrompt } from "../utils/promptBuilder.js";
-import { VideoMetadata, RecipeResponse, Ingredient, RecipeStep } from "../types/response.js";
+import { buildExtractionPrompt } from "../utils/promptBuilder";
+import { VideoMetadata, RecipeResponse, Ingredient, RecipeStep } from "../types/response";
 
 const client = new Anthropic();
 
@@ -16,7 +16,7 @@ interface RawExtraction {
   confidence?: number;
 }
 
-function parseClaudeResponse(text: string): RawExtraction {
+export function parseClaudeResponse(text: string): RawExtraction {
   // Extract JSON from ```json ... ``` block
   const match = text.match(/```json\s*([\s\S]*?)```/);
   if (!match) {
