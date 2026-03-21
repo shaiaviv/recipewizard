@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+RUN npm install -g npm@11 && npm ci
 
 COPY prisma ./prisma
 COPY prisma.config.ts ./
