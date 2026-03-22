@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma";
 import type { AuthPayload } from "../middleware/auth";
 
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const googleClient = new OAuth2Client();
 
 export interface GoogleUserInfo {
   googleId: string;
@@ -13,9 +13,14 @@ export interface GoogleUserInfo {
 }
 
 export async function verifyGoogleToken(idToken: string): Promise<GoogleUserInfo> {
+  const audiences = [
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_IOS_CLIENT_ID,
+  ].filter(Boolean) as string[];
+
   const ticket = await googleClient.verifyIdToken({
     idToken,
-    audience: process.env.GOOGLE_CLIENT_ID,
+    audience: audiences,
   });
   const payload = ticket.getPayload();
   if (!payload?.sub || !payload.email) {
