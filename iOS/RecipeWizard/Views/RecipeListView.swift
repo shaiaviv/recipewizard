@@ -10,6 +10,7 @@ struct RecipeListView: View {
     @State private var appearedCards: Set<Int> = []
     @State private var iconFloat: CGFloat = 0
     @State private var showingSettings = false
+    @FocusState private var searchFocused: Bool
 
     private var firstName: String {
         auth.currentUser?.name
@@ -50,6 +51,7 @@ struct RecipeListView: View {
                 }
                 .scrollDismissesKeyboard(.immediately)
             }
+            .onTapGesture { searchFocused = false }
             .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $viewModel.isAddingURL) {
                 AddRecipeView(viewModel: viewModel)
@@ -110,8 +112,9 @@ struct RecipeListView: View {
             TextField("Search for recipes...", text: $viewModel.searchText)
                 .font(.system(size: 15, design: .rounded))
                 .autocorrectionDisabled()
+                .focused($searchFocused)
                 .submitLabel(.search)
-                .onSubmit { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) }
+                .onSubmit { searchFocused = false }
 
             if !viewModel.searchText.isEmpty {
                 Button {
