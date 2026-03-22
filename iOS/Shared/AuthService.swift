@@ -15,16 +15,16 @@ final class AuthService {
         let avatarUrl: String?
     }
 
-    private var defaults: UserDefaults? {
-        UserDefaults(suiteName: SharedConstants.appGroupID)
+    private var defaults: UserDefaults {
+        UserDefaults(suiteName: SharedConstants.appGroupID) ?? UserDefaults.standard
     }
 
     private init() {
-        isAuthenticated = defaults?.string(forKey: SharedConstants.jwtTokenKey) != nil
+        isAuthenticated = defaults.string(forKey: SharedConstants.jwtTokenKey) != nil
     }
 
     var jwtToken: String? {
-        defaults?.string(forKey: SharedConstants.jwtTokenKey)
+        defaults.string(forKey: SharedConstants.jwtTokenKey)
     }
 
     // MARK: - Configuration (call from RecipeWizardApp.init)
@@ -50,7 +50,7 @@ final class AuthService {
 
     func signOut() {
         GIDSignIn.sharedInstance.signOut()
-        defaults?.removeObject(forKey: SharedConstants.jwtTokenKey)
+        defaults.removeObject(forKey: SharedConstants.jwtTokenKey)
         isAuthenticated = false
         currentUser = nil
     }
@@ -76,7 +76,7 @@ final class AuthService {
         let (data, _) = try await URLSession.shared.data(for: request)
         let response = try JSONDecoder().decode(AuthResponse.self, from: data)
 
-        defaults?.set(response.token, forKey: SharedConstants.jwtTokenKey)
+        defaults.set(response.token, forKey: SharedConstants.jwtTokenKey)
         currentUser = UserInfo(
             id: response.user.id,
             email: response.user.email,

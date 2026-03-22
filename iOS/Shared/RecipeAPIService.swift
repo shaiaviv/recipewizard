@@ -137,8 +137,8 @@ actor RecipeAPIService {
     // MARK: - Private
 
     private func addAuthHeader(to request: inout URLRequest) {
-        if let token = UserDefaults(suiteName: SharedConstants.appGroupID)?
-            .string(forKey: SharedConstants.jwtTokenKey) {
+        let defaults = UserDefaults(suiteName: SharedConstants.appGroupID) ?? UserDefaults.standard
+        if let token = defaults.string(forKey: SharedConstants.jwtTokenKey) {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
     }
