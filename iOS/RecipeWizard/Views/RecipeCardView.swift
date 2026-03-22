@@ -125,7 +125,7 @@ struct RecipeCardView: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 72, alignment: .topLeading)
             .background(AppTheme.cardWhite)
         }
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius, style: .continuous))

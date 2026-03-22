@@ -48,6 +48,7 @@ struct RecipeListView: View {
                     }
                     .padding(.bottom, 32)
                 }
+                .scrollDismissesKeyboard(.immediately)
             }
             .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $viewModel.isAddingURL) {
@@ -109,6 +110,8 @@ struct RecipeListView: View {
             TextField("Search for recipes...", text: $viewModel.searchText)
                 .font(.system(size: 15, design: .rounded))
                 .autocorrectionDisabled()
+                .submitLabel(.search)
+                .onSubmit { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) }
 
             if !viewModel.searchText.isEmpty {
                 Button {
