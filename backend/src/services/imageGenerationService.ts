@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 
-const MODEL = "gemini-3.1-flash-image-preview";
+const MODEL = "gemini-2.5-flash-image";
 
 const STYLE_SUFFIX =
   "Studio Ghibli / Hayao Miyazaki anime art style. Soft watercolor textures, " +
