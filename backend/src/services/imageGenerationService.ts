@@ -26,10 +26,6 @@ export async function generateRecipeImage(
       contents: prompt,
       config: {
         responseModalities: ["TEXT", "IMAGE"],
-        imageConfig: {
-          aspectRatio: "1:1",
-          imageSize: "1K",
-        },
       },
     });
 
@@ -43,7 +39,7 @@ export async function generateRecipeImage(
     console.warn("[imageGenerationService] No image part in response");
     return null;
   } catch (err) {
-    console.warn("[imageGenerationService] Image generation failed:", err);
+    console.error("[imageGenerationService] Image generation failed:", err);
     return null;
   }
 }
