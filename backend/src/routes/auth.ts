@@ -19,8 +19,23 @@ router.post("/google", async (req: Request, res: Response) => {
     return;
   }
 
-  const user = await findOrCreateUser(userInfo);
-  const token = signJwt(user.id, user.email);
+  let user;
+  try {
+    user = await findOrCreateUser(userInfo);
+  } catch (err) {
+    console.error("[auth] Database error in findOrCreateUser:", err);
+    res.status(500).json({ error: "Database error", detail: err instanceof Error ? err.message : String(err) });
+    return;
+  }
+
+  let token;
+  try {
+    token = signJwt(user.id, user.email);
+  } catch (err) {
+    console.error("[auth] JWT signing failed:", err);
+    res.status(500).json({ error: "Token signing failed", detail: err instanceof Error ? err.message : String(err) });
+    return;
+  }
 
   res.json({
     token,
