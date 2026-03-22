@@ -7,7 +7,7 @@ struct RecipeListView: View {
     @Query(sort: \Recipe.createdAt, order: .reverse) private var recipes: [Recipe]
 
     @State private var viewModel = RecipeListViewModel()
-    @State private var appearedCards: Set<Int> = []
+    @State private var appearedCards: Set<UUID> = []
     @State private var iconFloat: CGFloat = 0
     @State private var showingSettings = false
     @FocusState private var searchFocused: Bool
@@ -30,7 +30,7 @@ struct RecipeListView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                AppTheme.warmCanvas.ignoresSafeArea()
+                AppBackground()
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
@@ -174,8 +174,8 @@ struct RecipeListView: View {
                     RecipeCardView(recipe: recipe)
                 }
                 .buttonStyle(PressAnimationButtonStyle())
-                .opacity(appearedCards.contains(index) ? 1 : 0)
-                .offset(y: appearedCards.contains(index) ? 0 : 16)
+                .opacity(appearedCards.contains(recipe.id) ? 1 : 0)
+                .offset(y: appearedCards.contains(recipe.id) ? 0 : 16)
                 .contextMenu {
                     Button(role: .destructive) {
                         withAnimation {
@@ -186,12 +186,12 @@ struct RecipeListView: View {
                     }
                 }
                 .onAppear {
-                    guard !appearedCards.contains(index) else { return }
+                    guard !appearedCards.contains(recipe.id) else { return }
                     withAnimation(
                         .spring(response: 0.46, dampingFraction: 0.82)
                         .delay(Double(min(index, 9)) * 0.055)
                     ) {
-                        appearedCards.insert(index)
+                        appearedCards.insert(recipe.id)
                     }
                 }
             }
@@ -271,7 +271,7 @@ private struct SettingsView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                AppTheme.warmCanvas.ignoresSafeArea()
+                AppBackground()
 
                 VStack(spacing: 0) {
                     // Profile header

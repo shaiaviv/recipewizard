@@ -12,17 +12,17 @@ enum AppTheme {
     // Keep terracotta as alias so existing views compile
     static var terracotta: Color { orange }
 
-    /// Light warm peach in light mode, deep basil green in dark mode
+    /// Light warm peach in light mode, deep espresso in dark mode (used for toolbars)
     static let warmCanvas = Color(UIColor { traits in
         traits.userInterfaceStyle == .dark
-            ? UIColor(red: 0.047, green: 0.118, blue: 0.071, alpha: 1) // deep herb garden
-            : UIColor(red: 0.99,  green: 0.96,  blue: 0.89,  alpha: 1) // warm peach
+            ? UIColor(red: 0.09, green: 0.07, blue: 0.04, alpha: 1)   // dark espresso
+            : UIColor(red: 0.99, green: 0.96, blue: 0.89, alpha: 1)   // warm peach
     })
 
-    /// White in light mode, elevated basil card in dark mode
+    /// White in light mode, elevated dark card in dark mode
     static let cardWhite = Color(UIColor { traits in
         traits.userInterfaceStyle == .dark
-            ? UIColor(red: 0.082, green: 0.180, blue: 0.110, alpha: 1) // lifted basil
+            ? UIColor(red: 0.14, green: 0.11, blue: 0.07, alpha: 1)   // warm dark card
             : UIColor.white
     })
 
@@ -38,6 +38,64 @@ enum AppTheme {
     }
     static var springSmooth: Animation {
         .spring(response: 0.52, dampingFraction: 0.86)
+    }
+}
+
+// MARK: - App Background
+
+/// Multi-stop gradient with floating ambient light accents.
+/// Blobs are in .overlay() so they never affect layout sizing.
+struct AppBackground: View {
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        LinearGradient(
+            colors: colorScheme == .dark ? [
+                Color(red: 0.07, green: 0.05, blue: 0.03),  // rich espresso
+                Color(red: 0.11, green: 0.08, blue: 0.05),  // dark cocoa
+                Color(red: 0.16, green: 0.11, blue: 0.06)   // warm dark amber
+            ] : [
+                Color(red: 1.00, green: 0.975, blue: 0.945), // warm ivory
+                Color(red: 0.99, green: 0.945, blue: 0.875), // golden cream
+                Color(red: 0.97, green: 0.905, blue: 0.800)  // apricot
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        // Blobs are overlays — they never contribute to layout size
+        .overlay(alignment: .topTrailing) {
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [AppTheme.orange.opacity(colorScheme == .dark ? 0.20 : 0.26), .clear],
+                        center: .center, startRadius: 0, endRadius: 200
+                    )
+                )
+                .frame(width: 420, height: 420)
+                .offset(x: 120, y: -140)
+                .blur(radius: colorScheme == .dark ? 40 : 28)
+                .allowsHitTesting(false)
+        }
+        .overlay(alignment: .bottomLeading) {
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            (colorScheme == .dark
+                                ? Color(red: 0.55, green: 0.28, blue: 0.04)  // dark amber
+                                : AppTheme.amber
+                            ).opacity(colorScheme == .dark ? 0.22 : 0.12),
+                            .clear
+                        ],
+                        center: .center, startRadius: 0, endRadius: 180
+                    )
+                )
+                .frame(width: 360, height: 360)
+                .offset(x: -100, y: 80)
+                .blur(radius: 50)
+                .allowsHitTesting(false)
+        }
+        .ignoresSafeArea()
     }
 }
 
