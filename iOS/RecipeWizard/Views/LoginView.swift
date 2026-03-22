@@ -5,42 +5,99 @@ struct LoginView: View {
     @Environment(AuthService.self) private var auth
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var appeared = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
+        ZStack {
+            // Rich espresso background
+            LinearGradient(
+                colors: [
+                    Color(red: 0.08, green: 0.05, blue: 0.02),
+                    Color(red: 0.16, green: 0.10, blue: 0.05),
+                    Color(red: 0.22, green: 0.14, blue: 0.08)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
 
-            VStack(spacing: 16) {
-                Image(systemName: "fork.knife.circle.fill")
-                    .font(.system(size: 80))
-                    .foregroundStyle(.orange)
-                Text("RecipeWizard")
-                    .font(.largeTitle.weight(.bold))
-                Text("Save recipes from TikTok and Instagram.")
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
+            // Warm ambient glow behind the icon
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [AppTheme.terracotta.opacity(0.22), .clear],
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: 220
+                    )
+                )
+                .frame(width: 440, height: 440)
+                .offset(y: -80)
+                .blur(radius: 24)
 
-            Spacer()
+            VStack(spacing: 0) {
+                Spacer()
 
-            VStack(spacing: 16) {
-                if isLoading {
-                    ProgressView()
-                        .frame(height: 50)
-                } else {
-                    GoogleSignInButton(action: handleSignIn)
-                        .frame(height: 50)
+                // Logo + tagline
+                VStack(spacing: 22) {
+                    ZStack {
+                        Circle()
+                            .fill(AppTheme.terracotta.opacity(0.16))
+                            .frame(width: 118, height: 118)
+
+                        Image(systemName: "fork.knife.circle.fill")
+                            .font(.system(size: 74))
+                            .foregroundStyle(AppTheme.terracotta)
+                    }
+                    .scaleEffect(appeared ? 1.0 : 0.65)
+                    .opacity(appeared ? 1.0 : 0.0)
+
+                    VStack(spacing: 8) {
+                        Text("Recipe Wizard AI")
+                            .font(.custom("Didot-Bold", size: 36))
+                            .foregroundStyle(.white)
+                            .tracking(0.5)
+
+                        Text("Save recipes from TikTok\nand Instagram.")
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.48))
+                            .multilineTextAlignment(.center)
+                    }
+                    .opacity(appeared ? 1.0 : 0.0)
+                    .offset(y: appeared ? 0 : 10)
                 }
 
-                if let error = errorMessage {
-                    Text(error)
-                        .font(.footnote)
-                        .foregroundStyle(.red)
-                        .multilineTextAlignment(.center)
+                Spacer()
+
+                // Sign-in area
+                VStack(spacing: 14) {
+                    if isLoading {
+                        ProgressView()
+                            .tint(.white)
+                            .frame(height: 50)
+                    } else {
+                        GoogleSignInButton(action: handleSignIn)
+                            .frame(height: 50)
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+
+                    if let error = errorMessage {
+                        Text(error)
+                            .font(.footnote)
+                            .foregroundStyle(.red.opacity(0.85))
+                            .multilineTextAlignment(.center)
+                    }
                 }
+                .padding(.horizontal, 32)
+                .padding(.bottom, 60)
+                .opacity(appeared ? 1.0 : 0.0)
+                .offset(y: appeared ? 0 : 22)
             }
-            .padding(.horizontal, 32)
-            .padding(.bottom, 60)
+        }
+        .onAppear {
+            withAnimation(.spring(response: 0.68, dampingFraction: 0.72).delay(0.1)) {
+                appeared = true
+            }
         }
     }
 

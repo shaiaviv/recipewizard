@@ -3,6 +3,7 @@ import { ExtractRequest } from "../types/request";
 import { extractVideoMetadata } from "../services/videoExtractor";
 import { extractRecipeFromVideo } from "../services/claudeService";
 import { downloadAndEncodeImage } from "../services/imageService";
+import { generateRecipeImage } from "../services/imageGenerationService";
 import { isSupportedUrl, extractUrlFromText } from "../utils/urlValidator";
 import { requireAuth } from "../middleware/auth";
 import { saveRecipeForUser } from "../services/recipeService";
@@ -73,12 +74,15 @@ router.post("/extract", requireAuth, async (req: Request, res: Response) => {
     return;
   }
 
+  // Step 4: Generate Miyazaki-style illustration using the extracted recipe title
+  const generatedImage = await generateRecipeImage(recipeData.title);
+
   const responsePayload = {
     ...recipeData,
     source_url: url,
     platform: metadata.platform,
     thumbnail_url: metadata.thumbnail_url,
-    thumbnail_base64: thumbnailBase64,
+    thumbnail_base64: generatedImage ?? thumbnailBase64,
     raw_caption: metadata.description.slice(0, 1000) || null,
   };
 
