@@ -45,13 +45,6 @@
 			remoteGlobalIDString = FBFCAF96E5ABC8DC1BA1801C;
 			remoteInfo = ShareExtension;
 		};
-		BC2A19AA890D79794FE8E7BA /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A8FC6F91E0BEB5E12BA05C72 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A98AE1616B0090F07DA43CCA;
-			remoteInfo = RecipeWizard;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -250,7 +243,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				1DA89CC101AAE420263B1D56 /* PBXTargetDependency */,
 			);
 			name = ShareExtension;
 			packageProductDependencies = (
@@ -350,11 +342,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		1DA89CC101AAE420263B1D56 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A98AE1616B0090F07DA43CCA /* RecipeWizard */;
-			targetProxy = BC2A19AA890D79794FE8E7BA /* PBXContainerItemProxy */;
-		};
 		3F769B03DFE353530A61E027 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = FBFCAF96E5ABC8DC1BA1801C /* ShareExtension */;

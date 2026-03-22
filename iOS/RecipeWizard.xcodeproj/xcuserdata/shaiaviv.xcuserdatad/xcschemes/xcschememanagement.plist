@@ -7,12 +7,25 @@
 		<key>RecipeWizard.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>0</integer>
+			<integer>1</integer>
 		</dict>
 		<key>ShareExtension.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
 			<integer>0</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>A98AE1616B0090F07DA43CCA</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>FBFCAF96E5ABC8DC1BA1801C</key>
+		<dict>
+			<key>primary</key>
+			<true/>
 		</dict>
 	</dict>
 </dict>

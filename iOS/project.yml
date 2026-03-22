@@ -92,8 +92,5 @@ targets:
               NSExtensionActivationSupportsWebURLWithMaxCount: 1
               NSExtensionActivationSupportsText: true
     dependencies:
-      - embed: false
-        target: RecipeWizard
-        link: false
       - package: GoogleSignIn
         product: GoogleSignIn
