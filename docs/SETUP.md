@@ -95,16 +95,45 @@ The app will open on your phone. The first launch may prompt you to trust the de
 
 ## Step 5 — Instagram authentication (optional)
 
-Instagram heavily restricts public access. For Instagram Reels, yt-dlp needs your session cookies:
+Instagram heavily restricts public access. For Instagram Reels, yt-dlp needs your session cookies. You provide these once as the app developer — your users don't need to do anything.
 
-1. Install the **"Get cookies.txt LOCALLY"** browser extension in Chrome/Firefox
+**Export your cookies:**
+
+1. Install the **"Get cookies.txt LOCALLY"** extension in Chrome or Firefox
 2. Log into Instagram in that browser
-3. Go to any Instagram page
-4. Click the extension → **Export cookies for current site**
-5. Save the file as `backend/cookies.txt`
-6. Set `INSTAGRAM_COOKIES_PATH=./cookies.txt` in your `.env`
+3. Click the extension → **Export cookies for current site**
+4. Save the file as `backend/cookies.txt`
 
-**Note:** Cookies expire after ~30 days. The `/health` endpoint will warn you when they're stale.
+**Local dev:**
+
+Set in `backend/.env`:
+```
+INSTAGRAM_COOKIES_PATH=./cookies.txt
+```
+
+**Production (Railway):**
+
+Do this once to set up the Railway CLI:
+```bash
+npm install -g @railway/cli
+railway login
+cd backend && railway link   # select your RecipeWizard project
+```
+
+Then push your cookies to Railway:
+```bash
+cd backend
+./scripts/update-instagram-cookies.sh
+```
+
+This base64-encodes the cookies and sets `INSTAGRAM_COOKIES_B64` on Railway, which the server decodes to a temp file at startup. Railway will redeploy automatically.
+
+**When cookies expire (~90 days):**
+
+1. Re-export cookies from your browser → save as `backend/cookies.txt`
+2. Run `./scripts/update-instagram-cookies.sh` again
+
+That's it — one command to refresh.
 
 ---
 

@@ -1,16 +1,30 @@
 import YTDlpWrap from "yt-dlp-wrap";
 import path from "path";
+import fs from "fs";
+import os from "os";
 import { VideoMetadata } from "../types/response";
 
 const ytDlp = new YTDlpWrap();
 
+// Decode INSTAGRAM_COOKIES_B64 to a temp file once at startup
+let resolvedCookiesPath: string | null = null;
+
+const cookiesB64 = process.env.INSTAGRAM_COOKIES_B64;
+const cookiesPath = process.env.INSTAGRAM_COOKIES_PATH;
+
+if (cookiesB64) {
+  const tmpPath = path.join(os.tmpdir(), "instagram_cookies.txt");
+  fs.writeFileSync(tmpPath, Buffer.from(cookiesB64, "base64"));
+  resolvedCookiesPath = tmpPath;
+} else if (cookiesPath) {
+  resolvedCookiesPath = path.resolve(cookiesPath);
+}
+
 function buildArgs(url: string): string[] {
   const args = ["--dump-json", "--no-playlist", "--no-warnings", url];
 
-  const cookiesPath = process.env.INSTAGRAM_COOKIES_PATH;
-  if (cookiesPath) {
-    const resolved = path.resolve(cookiesPath);
-    args.unshift("--cookies", resolved);
+  if (resolvedCookiesPath) {
+    args.unshift("--cookies", resolvedCookiesPath);
   }
 
   return args;
