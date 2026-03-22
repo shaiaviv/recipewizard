@@ -20,7 +20,7 @@ router.get("/", async (req: Request, res: Response) => {
     prep_time_minutes: r.prepTimeMinutes ?? null,
     servings: r.servings ?? null,
     difficulty: r.difficulty ?? null,
-    tags: r.tags,
+    tags: r.tags ?? [],
     extraction_confidence: r.extractionConfidence,
     raw_caption: r.rawCaption ?? null,
     ingredients: r.ingredients.map((ing) => ({

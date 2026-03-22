@@ -49,7 +49,7 @@ final class Recipe {
     convenience init(from response: RecipeResponse) {
         self.init(
             title: response.title,
-            sourceURL: response.sourceURL,
+            sourceURL: response.sourceUrl,
             platform: response.platform
         )
         self.recipeDescription = response.description
@@ -57,8 +57,8 @@ final class Recipe {
         self.prepTimeMinutes = response.prepTimeMinutes
         self.servings = response.servings
         self.difficulty = response.difficulty
-        self.tags = response.tags
-        self.extractionConfidence = response.extractionConfidence
+        self.tags = response.tags ?? []
+        self.extractionConfidence = response.extractionConfidence ?? 0
 
         if let b64 = response.thumbnailBase64,
            let data = Data(base64Encoded: b64.replacingOccurrences(of: "data:image/jpeg;base64,", with: "")) {

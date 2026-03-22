@@ -58,7 +58,9 @@ actor RecipeAPIService {
         switch httpResponse.statusCode {
         case 200:
             do {
-                return try JSONDecoder().decode(RecipeResponse.self, from: data)
+                let decoder = JSONDecoder()
+                decoder.keyDecodingStrategy = .convertFromSnakeCase
+                return try decoder.decode(RecipeResponse.self, from: data)
             } catch {
                 throw APIError.decodingError(error.localizedDescription)
             }

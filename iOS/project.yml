@@ -16,7 +16,7 @@ settings:
     SWIFT_VERSION: "5.9"
     MARKETING_VERSION: "1.0.0"
     CURRENT_PROJECT_VERSION: "1"
-    DEVELOPMENT_TEAM: ""   # Set your Team ID here after opening in Xcode
+    DEVELOPMENT_TEAM: "64L4MA2425"
 
 targets:
   RecipeWizard:
@@ -68,6 +68,8 @@ targets:
     sources:
       - path: ShareExtension
       - path: Shared
+        excludes:
+          - AuthService.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.recipewizard.app.ShareExtension

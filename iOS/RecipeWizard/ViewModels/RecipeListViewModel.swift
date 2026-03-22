@@ -24,7 +24,7 @@ final class RecipeListViewModel {
         do {
             let serverRecipes = try await RecipeAPIService.shared.fetchUserRecipes()
             for response in serverRecipes {
-                let sourceURL = response.sourceURL
+                let sourceURL = response.sourceUrl
                 let descriptor = FetchDescriptor<Recipe>(
                     predicate: #Predicate { $0.sourceURL == sourceURL }
                 )
@@ -55,7 +55,7 @@ final class RecipeListViewModel {
 
         for data in pendingData {
             guard let response = try? JSONDecoder().decode(RecipeResponse.self, from: data) else { continue }
-            let sourceURL = response.sourceURL
+            let sourceURL = response.sourceUrl
             let descriptor = FetchDescriptor<Recipe>(
                 predicate: #Predicate { $0.sourceURL == sourceURL }
             )
