@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Deployment
+
+Do NOT deploy using the Railway MCP tool. Just `git commit` and `git push` — CI will auto-deploy to Railway. This saves tokens and context.
+
 ## Commands
 
 ### Backend (Node.js/TypeScript)
