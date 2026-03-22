@@ -60,9 +60,9 @@ final class Recipe {
         self.tags = response.tags ?? []
         self.extractionConfidence = response.extractionConfidence ?? 0
 
-        if let b64 = response.thumbnailBase64,
-           let data = Data(base64Encoded: b64.replacingOccurrences(of: "data:image/jpeg;base64,", with: "")) {
-            self.thumbnailData = data
+        if let b64 = response.thumbnailBase64 {
+            let raw = b64.components(separatedBy: ",").last ?? b64
+            self.thumbnailData = Data(base64Encoded: raw)
         }
 
         self.ingredients = response.ingredients.enumerated().map { i, ing in
