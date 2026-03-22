@@ -31,12 +31,20 @@
 		DAAEB13EAB22EB0D39DBE617 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8043FC37CBFF4CF963B29C31 /* LoadingView.swift */; };
 		E324D030D1AF59CE71C0AA06 /* RecipeStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51922EDDCB7EF09093532A5D /* RecipeStep.swift */; };
 		E5B631361CB043B28ADC5B05 /* Ingredient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90F56DA27BA7FF6ECB8B15BB /* Ingredient.swift */; };
+		F82E2D8EFB88D839B7C8D932 /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3976921953BF859FFEC58F49 /* ShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FA2712AB19712542C4CE755E /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 14963ABFE81B70393DAFE273 /* GoogleSignInSwift */; };
 		FC47373ED25B5D6B29226030 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F6EE5A442B07C39F1D479A /* LoginView.swift */; };
 		FF15C1946C3CF971B5FB9E90 /* RecipeAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 243BDD21F0CB3FEE89AC93FA /* RecipeAPIService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		A1554929126F83333A75E0AF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A8FC6F91E0BEB5E12BA05C72 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FBFCAF96E5ABC8DC1BA1801C;
+			remoteInfo = ShareExtension;
+		};
 		BC2A19AA890D79794FE8E7BA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = A8FC6F91E0BEB5E12BA05C72 /* Project object */;
@@ -45,6 +53,20 @@
 			remoteInfo = RecipeWizard;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		5CF8A9020B713F71D6E52B63 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				F82E2D8EFB88D839B7C8D932 /* ShareExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		203B49DE89D5480D1C30F238 /* ShareExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ShareExtension.entitlements; sourceTree = "<group>"; };
@@ -202,10 +224,12 @@
 				290FD1F278103B8B8E5A75C7 /* Sources */,
 				3F2C993826997D8020B66ED2 /* Resources */,
 				C71CFC2DE8367A30203523BA /* Frameworks */,
+				5CF8A9020B713F71D6E52B63 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				3F769B03DFE353530A61E027 /* PBXTargetDependency */,
 			);
 			name = RecipeWizard;
 			packageProductDependencies = (
@@ -330,6 +354,11 @@
 			isa = PBXTargetDependency;
 			target = A98AE1616B0090F07DA43CCA /* RecipeWizard */;
 			targetProxy = BC2A19AA890D79794FE8E7BA /* PBXContainerItemProxy */;
+		};
+		3F769B03DFE353530A61E027 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FBFCAF96E5ABC8DC1BA1801C /* ShareExtension */;
+			targetProxy = A1554929126F83333A75E0AF /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
