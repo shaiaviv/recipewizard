@@ -5,6 +5,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install -g npm@11 && npm ci
 
+COPY prisma ./prisma
+RUN node_modules/.bin/prisma generate
+
 COPY tsconfig.json ./
 COPY src ./src
 RUN npm run build
