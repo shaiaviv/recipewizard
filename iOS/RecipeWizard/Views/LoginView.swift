@@ -9,12 +9,12 @@ struct LoginView: View {
 
     var body: some View {
         ZStack {
-            // Rich espresso background
+            // Refined charcoal background
             LinearGradient(
                 colors: [
-                    Color(red: 0.08, green: 0.05, blue: 0.02),
-                    Color(red: 0.16, green: 0.10, blue: 0.05),
-                    Color(red: 0.22, green: 0.14, blue: 0.08)
+                    Color(red: 0.067, green: 0.059, blue: 0.051),
+                    Color(red: 0.098, green: 0.090, blue: 0.082),
+                    Color(red: 0.130, green: 0.118, blue: 0.106)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing

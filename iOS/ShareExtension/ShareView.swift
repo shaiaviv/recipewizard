@@ -16,7 +16,7 @@ struct ShareView: View {
     private let amber  = Color(red: 0.83, green: 0.51, blue: 0.063)
     private let canvas = Color(UIColor { t in
         t.userInterfaceStyle == .dark
-            ? UIColor(red: 0.047, green: 0.118, blue: 0.071, alpha: 1)
+            ? UIColor(red: 0.098, green: 0.090, blue: 0.082, alpha: 1) // refined charcoal
             : UIColor(red: 0.99,  green: 0.96,  blue: 0.89,  alpha: 1)
     })
 

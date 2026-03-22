@@ -12,17 +12,17 @@ enum AppTheme {
     // Keep terracotta as alias so existing views compile
     static var terracotta: Color { orange }
 
-    /// Light warm peach in light mode, deep espresso in dark mode (used for toolbars)
+    /// Light warm peach in light mode, refined charcoal in dark mode (used for toolbars)
     static let warmCanvas = Color(UIColor { traits in
         traits.userInterfaceStyle == .dark
-            ? UIColor(red: 0.09, green: 0.07, blue: 0.04, alpha: 1)   // dark espresso
+            ? UIColor(red: 0.10, green: 0.09, blue: 0.085, alpha: 1)  // refined charcoal
             : UIColor(red: 0.99, green: 0.96, blue: 0.89, alpha: 1)   // warm peach
     })
 
-    /// White in light mode, elevated dark card in dark mode
+    /// White in light mode, elevated charcoal card in dark mode
     static let cardWhite = Color(UIColor { traits in
         traits.userInterfaceStyle == .dark
-            ? UIColor(red: 0.14, green: 0.11, blue: 0.07, alpha: 1)   // warm dark card
+            ? UIColor(red: 0.155, green: 0.145, blue: 0.135, alpha: 1) // elevated charcoal card
             : UIColor.white
     })
 
@@ -51,9 +51,9 @@ struct AppBackground: View {
     var body: some View {
         LinearGradient(
             colors: colorScheme == .dark ? [
-                Color(red: 0.07, green: 0.05, blue: 0.03),  // rich espresso
-                Color(red: 0.11, green: 0.08, blue: 0.05),  // dark cocoa
-                Color(red: 0.16, green: 0.11, blue: 0.06)   // warm dark amber
+                Color(red: 0.067, green: 0.059, blue: 0.051), // deep charcoal
+                Color(red: 0.098, green: 0.090, blue: 0.082), // mid charcoal
+                Color(red: 0.130, green: 0.118, blue: 0.106)  // lifted charcoal
             ] : [
                 Color(red: 1.00, green: 0.975, blue: 0.945), // warm ivory
                 Color(red: 0.99, green: 0.945, blue: 0.875), // golden cream
@@ -67,7 +67,7 @@ struct AppBackground: View {
             Circle()
                 .fill(
                     RadialGradient(
-                        colors: [AppTheme.orange.opacity(colorScheme == .dark ? 0.20 : 0.26), .clear],
+                        colors: [AppTheme.orange.opacity(colorScheme == .dark ? 0.16 : 0.26), .clear],
                         center: .center, startRadius: 0, endRadius: 200
                     )
                 )
