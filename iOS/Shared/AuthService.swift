@@ -61,17 +61,19 @@ final class AuthService {
         guard let idToken = user.idToken?.tokenString else {
             throw URLError(.userAuthenticationRequired)
         }
-        try await exchangeGoogleToken(idToken)
+        try await exchangeGoogleToken(idToken, displayName: user.profile?.name)
     }
 
-    private func exchangeGoogleToken(_ idToken: String) async throws {
+    private func exchangeGoogleToken(_ idToken: String, displayName: String?) async throws {
         guard let url = URL(string: "\(SharedConstants.backendURL)/api/v1/auth/google") else {
             throw URLError(.badURL)
         }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(["idToken": idToken])
+        var body: [String: String] = ["idToken": idToken]
+        if let displayName { body["displayName"] = displayName }
+        request.httpBody = try JSONEncoder().encode(body)
 
         let (data, _) = try await URLSession.shared.data(for: request)
         let response = try JSONDecoder().decode(AuthResponse.self, from: data)

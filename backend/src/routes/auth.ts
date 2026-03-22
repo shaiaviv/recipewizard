@@ -4,7 +4,7 @@ import { verifyGoogleToken, findOrCreateUser, signJwt } from "../services/userSe
 const router = Router();
 
 router.post("/google", async (req: Request, res: Response) => {
-  const { idToken } = req.body as { idToken?: string };
+  const { idToken, displayName } = req.body as { idToken?: string; displayName?: string };
   if (!idToken) {
     res.status(400).json({ error: "idToken is required" });
     return;
@@ -12,7 +12,7 @@ router.post("/google", async (req: Request, res: Response) => {
 
   let userInfo;
   try {
-    userInfo = await verifyGoogleToken(idToken);
+    userInfo = await verifyGoogleToken(idToken, displayName);
   } catch (err) {
     console.error("[auth] Google token verification failed:", err);
     res.status(401).json({ error: "Invalid Google ID token" });

@@ -12,7 +12,7 @@ export interface GoogleUserInfo {
   avatarUrl: string | null;
 }
 
-export async function verifyGoogleToken(idToken: string): Promise<GoogleUserInfo> {
+export async function verifyGoogleToken(idToken: string, displayName?: string): Promise<GoogleUserInfo> {
   const audiences = [
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_IOS_CLIENT_ID,
@@ -29,7 +29,7 @@ export async function verifyGoogleToken(idToken: string): Promise<GoogleUserInfo
   return {
     googleId: payload.sub,
     email: payload.email,
-    name: payload.name ?? payload.email,
+    name: payload.name ?? displayName ?? payload.email,
     avatarUrl: payload.picture ?? null,
   };
 }
