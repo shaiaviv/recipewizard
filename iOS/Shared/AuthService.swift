@@ -36,7 +36,7 @@ final class AuthService {
         // Restore previous sign-in silently
         GIDSignIn.sharedInstance.restorePreviousSignIn { [weak self] user, _ in
             guard let self, let user else { return }
-            Task { await self.handleGoogleUser(user) }
+            Task { try? await self.handleGoogleUser(user) }
         }
     }
 
@@ -45,7 +45,7 @@ final class AuthService {
     @MainActor
     func signIn(presenting viewController: UIViewController) async throws {
         let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: viewController)
-        await handleGoogleUser(result.user)
+        try await handleGoogleUser(result.user)
     }
 
     func signOut() {
@@ -57,13 +57,11 @@ final class AuthService {
 
     // MARK: - Private
 
-    private func handleGoogleUser(_ user: GIDGoogleUser) async {
-        guard let idToken = user.idToken?.tokenString else { return }
-        do {
-            try await exchangeGoogleToken(idToken)
-        } catch {
-            print("[AuthService] Token exchange failed: \(error)")
+    private func handleGoogleUser(_ user: GIDGoogleUser) async throws {
+        guard let idToken = user.idToken?.tokenString else {
+            throw URLError(.userAuthenticationRequired)
         }
+        try await exchangeGoogleToken(idToken)
     }
 
     private func exchangeGoogleToken(_ idToken: String) async throws {
