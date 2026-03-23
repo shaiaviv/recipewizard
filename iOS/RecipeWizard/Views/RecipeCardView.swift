@@ -125,31 +125,14 @@ struct FavoriteButton: View {
             }
         } label: {
             let favorited = recipe.isFavorited == true
-            ZStack {
-                // Rounded-square badge — echoes the app icon shape
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(favorited
-                          ? AnyShapeStyle(LinearGradient(
-                              colors: [Color(red: 0.96, green: 0.27, blue: 0.40),
-                                       Color(red: 0.82, green: 0.14, blue: 0.28)],
-                              startPoint: .topLeading,
-                              endPoint: .bottomTrailing))
-                          : AnyShapeStyle(.regularMaterial))
-                    .frame(width: 34, height: 34)
-                    .shadow(
-                        color: favorited
-                            ? Color(red: 0.96, green: 0.27, blue: 0.40).opacity(0.50)
-                            : .black.opacity(0.10),
-                        radius: favorited ? 10 : 4,
-                        y: favorited ? 4 : 2
-                    )
-
-                Image(systemName: favorited ? "heart.fill" : "heart")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(favorited ? .white : Color(red: 0.96, green: 0.27, blue: 0.40))
-                    .scaleEffect(heartScale)
-            }
-            .animation(.spring(response: 0.35, dampingFraction: 0.72), value: recipe.isFavorited)
+            Image(systemName: favorited ? "heart.fill" : "heart")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(favorited
+                    ? Color(red: 0.96, green: 0.27, blue: 0.40)
+                    : .white)
+                .shadow(color: .black.opacity(0.35), radius: 3, x: 0, y: 1)
+                .scaleEffect(heartScale)
+                .animation(.spring(response: 0.35, dampingFraction: 0.72), value: recipe.isFavorited)
         }
         .buttonStyle(.plain)
     }
@@ -198,9 +181,9 @@ struct RecipeCardView: View {
                         .padding(8)
                 }
             }
-            .overlay(alignment: .bottomTrailing) {
+            .overlay(alignment: .topLeading) {
                 FavoriteButton(recipe: recipe)
-                    .padding(8)
+                    .padding(10)
             }
 
             // Info area
