@@ -72,7 +72,7 @@ struct RecipeListView: View {
                 }
                 .scrollDismissesKeyboard(.immediately)
             }
-            .onTapGesture { searchFocused = false }
+            .simultaneousGesture(TapGesture().onEnded { searchFocused = false })
             .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
@@ -227,7 +227,7 @@ struct RecipeListView: View {
                 }
             }
             .padding(.horizontal, 20)
-            .padding(.vertical, 4)
+            .padding(.vertical, 6)
         }
     }
 
@@ -458,46 +458,42 @@ private struct CategoryChip: View {
     let isSelected: Bool
     let action: () -> Void
 
+    @State private var scale: CGFloat = 1.0
+
     var body: some View {
-        Button(action: action) {
-            VStack(spacing: 7) {
-                // Icon bubble
-                ZStack {
-                    Circle()
-                        .fill(isSelected
-                              ? Color.white.opacity(0.22)
-                              : category.color.opacity(0.13))
-                        .frame(width: 46, height: 46)
-                    CategoryIcon(
-                        category: category,
-                        color: isSelected ? .white : category.color,
-                        size: 22
+        Button {
+            // Quick pop up, then spring settle
+            withAnimation(.spring(response: 0.18, dampingFraction: 0.4)) { scale = 1.18 }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.14) {
+                withAnimation(AppTheme.springBouncy) { scale = 1.0 }
+            }
+            action()
+        } label: {
+            VStack(spacing: 9) {
+                // Watercolor illustration inside bordered card
+                CategoryIcon(category: category, size: 64)
+                    .padding(6)
+                    .background {
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .strokeBorder(
+                                isSelected ? AppTheme.orange : Color(.separator),
+                                lineWidth: isSelected ? 2.5 : 1.5
+                            )
+                    }
+                    .shadow(
+                        color: isSelected ? AppTheme.orange.opacity(0.28) : .black.opacity(0.07),
+                        radius: isSelected ? 10 : 5,
+                        y: isSelected ? 4 : 2
                     )
-                }
+                    .scaleEffect(scale)
 
                 // Label
                 Text(category.rawValue)
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
-                    .foregroundStyle(isSelected ? .white : .primary)
+                    .font(.system(size: 12, weight: isSelected ? .bold : .medium, design: .rounded))
+                    .foregroundStyle(isSelected ? AppTheme.orange : .secondary)
                     .lineLimit(1)
             }
-            .frame(width: 70)
-            .padding(.vertical, 12)
-            .background {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(isSelected
-                          ? AnyShapeStyle(LinearGradient(
-                                colors: [category.color, category.color.opacity(0.75)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing))
-                          : AnyShapeStyle(AppTheme.cardWhite))
-                    .shadow(
-                        color: isSelected ? category.color.opacity(0.45) : .black.opacity(0.07),
-                        radius: isSelected ? 10 : 6,
-                        y: isSelected ? 4 : 2
-                    )
-            }
-            .scaleEffect(isSelected ? 1.06 : 1.0)
+            .frame(width: 82)
             .animation(AppTheme.springBouncy, value: isSelected)
         }
         .buttonStyle(.plain)

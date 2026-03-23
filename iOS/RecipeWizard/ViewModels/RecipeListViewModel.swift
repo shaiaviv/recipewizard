@@ -63,6 +63,24 @@ final class RecipeListViewModel {
             }
         }
 
+        /// Asset catalog image name for this category's watercolor icon
+        var imageName: String {
+            switch self {
+            case .all:       return "category_all"
+            case .favorites: return "category_favorites"
+            case .italian:   return "category_italian"
+            case .mexican:   return "category_mexican"
+            case .asian:     return "category_asian"
+            case .chicken:   return "category_chicken"
+            case .seafood:   return "category_seafood"
+            case .meat:      return "category_meat"
+            case .healthy:   return "category_healthy"
+            case .dessert:   return "category_cake"
+            case .breakfast: return "category_breakfast"
+            case .soup:      return "category_soup"
+            }
+        }
+
         /// Accent color unique to each category
         var color: Color {
             switch self {
