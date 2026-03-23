@@ -17,6 +17,7 @@ final class RecipeListViewModel {
 
     enum RecipeCategory: String, CaseIterable, Hashable {
         case all       = "All"
+        case favorites = "Favorites"
         case italian   = "Italian"
         case mexican   = "Mexican"
         case asian     = "Asian"
@@ -31,6 +32,7 @@ final class RecipeListViewModel {
         var icon: String {
             switch self {
             case .all:       return "🍽️"
+            case .favorites: return "❤️"
             case .italian:   return "🍝"
             case .mexican:   return "🌮"
             case .asian:     return "🍜"
@@ -47,6 +49,7 @@ final class RecipeListViewModel {
         var keywords: [String] {
             switch self {
             case .all:       return []
+            case .favorites: return []
             case .italian:   return ["pasta", "pizza", "risotto", "carbonara", "lasagna", "gnocchi", "pesto", "tiramisu", "italian", "linguine", "fettuccine", "spaghetti", "ravioli", "arrabbiata"]
             case .mexican:   return ["taco", "burrito", "enchilada", "salsa", "guacamole", "quesadilla", "fajita", "mexican", "jalapeño", "nacho", "tortilla", "chipotle", "carnitas"]
             case .asian:     return ["ramen", "sushi", "stir fry", "stir-fry", "dumpling", "noodle", "fried rice", "thai", "chinese", "japanese", "korean", "pad thai", "pho", "miso", "teriyaki", "wok", "soy sauce", "bao", "bibimbap", "kimchi", "curry", "szechuan"]
@@ -60,17 +63,43 @@ final class RecipeListViewModel {
             }
         }
 
+        /// Accent color unique to each category
+        var color: Color {
+            switch self {
+            case .all:       return Color(red: 0.97, green: 0.59, blue: 0.19) // brand orange
+            case .favorites: return Color(red: 0.96, green: 0.27, blue: 0.40) // warm red
+            case .italian:   return Color(red: 0.88, green: 0.24, blue: 0.19) // tomato red
+            case .mexican:   return Color(red: 0.20, green: 0.72, blue: 0.35) // guacamole green
+            case .asian:     return Color(red: 0.82, green: 0.12, blue: 0.25) // crimson
+            case .chicken:   return Color(red: 0.98, green: 0.71, blue: 0.10) // golden yellow
+            case .seafood:   return Color(red: 0.08, green: 0.65, blue: 0.79) // ocean teal
+            case .meat:      return Color(red: 0.62, green: 0.16, blue: 0.10) // deep burgundy
+            case .healthy:   return Color(red: 0.22, green: 0.74, blue: 0.42) // fresh green
+            case .dessert:   return Color(red: 0.90, green: 0.27, blue: 0.61) // rose pink
+            case .breakfast: return Color(red: 0.98, green: 0.54, blue: 0.10) // warm amber
+            case .soup:      return Color(red: 0.76, green: 0.35, blue: 0.08) // clay
+            }
+        }
+
         func matches(_ recipe: Recipe) -> Bool {
-            if self == .all { return true }
-            let haystack = ([recipe.title] + recipe.tags).joined(separator: " ").lowercased()
-            return keywords.contains(where: { haystack.contains($0) })
+            switch self {
+            case .all:       return true
+            case .favorites: return recipe.isFavorited
+            default:
+                let haystack = ([recipe.title] + recipe.tags).joined(separator: " ").lowercased()
+                return keywords.contains(where: { haystack.contains($0) })
+            }
         }
     }
 
     /// Returns only categories that have at least one matching recipe (always includes .all).
     func availableCategories(from recipes: [Recipe]) -> [RecipeCategory] {
         RecipeCategory.allCases.filter { category in
-            category == .all || recipes.contains(where: { category.matches($0) })
+            switch category {
+            case .all:       return true
+            case .favorites: return recipes.contains(where: { $0.isFavorited })
+            default:         return recipes.contains(where: { category.matches($0) })
+            }
         }
     }
 

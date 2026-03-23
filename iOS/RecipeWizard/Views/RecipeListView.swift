@@ -35,7 +35,11 @@ struct RecipeListView: View {
             }
         }
 
-        return result
+        // Favorites always float to the top; stable sort preserves date order within groups
+        return result.sorted { a, b in
+            if a.isFavorited != b.isFavorited { return a.isFavorited }
+            return a.createdAt > b.createdAt
+        }
     }
 
     var body: some View {
@@ -175,9 +179,13 @@ struct RecipeListView: View {
         VStack(spacing: 12) {
             Text(viewModel.selectedCategory.icon)
                 .font(.system(size: 44))
-            Text("No \(viewModel.selectedCategory.rawValue.lowercased()) recipes yet")
+            Text(viewModel.selectedCategory == .favorites
+                 ? "No favorites yet"
+                 : "No \(viewModel.selectedCategory.rawValue.lowercased()) recipes yet")
                 .font(.system(size: 17, weight: .semibold, design: .rounded))
-            Text("Share a recipe video to get started")
+            Text(viewModel.selectedCategory == .favorites
+                 ? "Tap the heart on any recipe to save it here"
+                 : "Share a recipe video to get started")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -189,7 +197,7 @@ struct RecipeListView: View {
 
     private var categoryStrip: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 9) {
+            HStack(spacing: 10) {
                 ForEach(viewModel.availableCategories(from: recipes), id: \.self) { category in
                     CategoryChip(
                         category: category,
@@ -202,7 +210,7 @@ struct RecipeListView: View {
                 }
             }
             .padding(.horizontal, 20)
-            .padding(.vertical, 2)
+            .padding(.vertical, 4)
         }
     }
 
@@ -219,6 +227,16 @@ struct RecipeListView: View {
                 .opacity(appearedCards.contains(recipe.id) ? 1 : 0)
                 .offset(y: appearedCards.contains(recipe.id) ? 0 : 16)
                 .contextMenu {
+                    Button {
+                        withAnimation(AppTheme.springBouncy) {
+                            recipe.isFavorited.toggle()
+                        }
+                    } label: {
+                        Label(
+                            recipe.isFavorited ? "Remove from Favorites" : "Add to Favorites",
+                            systemImage: recipe.isFavorited ? "heart.slash" : "heart"
+                        )
+                    }
                     Button(role: .destructive) {
                         withAnimation {
                             context.delete(recipe)
@@ -425,27 +443,42 @@ private struct CategoryChip: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 6) {
-                Text(category.icon)
-                    .font(.system(size: 15))
-                Text(category.rawValue)
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundStyle(isSelected ? .white : .primary)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 9)
-            .background {
-                if isSelected {
-                    Capsule()
-                        .fill(AppTheme.orange)
-                        .shadow(color: AppTheme.orange.opacity(0.35), radius: 8, y: 3)
-                } else {
-                    Capsule()
-                        .fill(AppTheme.cardWhite)
-                        .shadow(color: .black.opacity(0.07), radius: 6, y: 2)
+            VStack(spacing: 7) {
+                // Emoji bubble
+                ZStack {
+                    Circle()
+                        .fill(isSelected
+                              ? Color.white.opacity(0.22)
+                              : category.color.opacity(0.13))
+                        .frame(width: 46, height: 46)
+                    Text(category.icon)
+                        .font(.system(size: 22))
                 }
+
+                // Label
+                Text(category.rawValue)
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .foregroundStyle(isSelected ? .white : .primary)
+                    .lineLimit(1)
             }
-            .scaleEffect(isSelected ? 1.04 : 1.0)
+            .frame(width: 70)
+            .padding(.vertical, 12)
+            .background {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(isSelected
+                          ? AnyShapeStyle(LinearGradient(
+                                colors: [category.color, category.color.opacity(0.75)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing))
+                          : AnyShapeStyle(AppTheme.cardWhite))
+                    .shadow(
+                        color: isSelected ? category.color.opacity(0.45) : .black.opacity(0.07),
+                        radius: isSelected ? 10 : 6,
+                        y: isSelected ? 4 : 2
+                    )
+            }
+            .scaleEffect(isSelected ? 1.06 : 1.0)
+            .animation(AppTheme.springBouncy, value: isSelected)
         }
         .buttonStyle(.plain)
     }

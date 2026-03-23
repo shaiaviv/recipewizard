@@ -107,6 +107,53 @@ struct PressAnimationButtonStyle: ButtonStyle {
     }
 }
 
+// MARK: - Favorite Button
+
+struct FavoriteButton: View {
+    let recipe: Recipe
+    @State private var heartScale: CGFloat = 1.0
+
+    var body: some View {
+        Button {
+            recipe.isFavorited.toggle()
+            // Two-phase pump: quick snap up, then spring settle
+            withAnimation(.spring(response: 0.20, dampingFraction: 0.42)) {
+                heartScale = 1.45
+            }
+            withAnimation(.spring(response: 0.38, dampingFraction: 0.68).delay(0.14)) {
+                heartScale = 1.0
+            }
+        } label: {
+            ZStack {
+                // Rounded-square badge — echoes the app icon shape
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(recipe.isFavorited
+                          ? AnyShapeStyle(LinearGradient(
+                              colors: [Color(red: 0.96, green: 0.27, blue: 0.40),
+                                       Color(red: 0.82, green: 0.14, blue: 0.28)],
+                              startPoint: .topLeading,
+                              endPoint: .bottomTrailing))
+                          : AnyShapeStyle(.regularMaterial))
+                    .frame(width: 34, height: 34)
+                    .shadow(
+                        color: recipe.isFavorited
+                            ? Color(red: 0.96, green: 0.27, blue: 0.40).opacity(0.50)
+                            : .black.opacity(0.10),
+                        radius: recipe.isFavorited ? 10 : 4,
+                        y: recipe.isFavorited ? 4 : 2
+                    )
+
+                Image(systemName: recipe.isFavorited ? "heart.fill" : "heart")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(recipe.isFavorited ? .white : Color(red: 0.96, green: 0.27, blue: 0.40))
+                    .scaleEffect(heartScale)
+            }
+            .animation(.spring(response: 0.35, dampingFraction: 0.72), value: recipe.isFavorited)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 // MARK: - RecipeCardView
 
 struct RecipeCardView: View {
@@ -115,32 +162,31 @@ struct RecipeCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Image area
-            ZStack(alignment: .topTrailing) {
-                Group {
-                    if let data = recipe.thumbnailData, let uiImage = UIImage(data: data) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFill()
-                    } else {
-                        LinearGradient(
-                            colors: [
-                                AppTheme.orange.opacity(0.25),
-                                AppTheme.amber.opacity(0.20)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                        .overlay {
-                            Image(systemName: "fork.knife")
-                                .font(.system(size: 28, weight: .light))
-                                .foregroundStyle(AppTheme.orange.opacity(0.6))
-                        }
+            Group {
+                if let data = recipe.thumbnailData, let uiImage = UIImage(data: data) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    LinearGradient(
+                        colors: [
+                            AppTheme.orange.opacity(0.25),
+                            AppTheme.amber.opacity(0.20)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .overlay {
+                        Image(systemName: "fork.knife")
+                            .font(.system(size: 28, weight: .light))
+                            .foregroundStyle(AppTheme.orange.opacity(0.6))
                     }
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: 130)
-                .clipped()
-
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 130)
+            .clipped()
+            .overlay(alignment: .topTrailing) {
                 if recipe.needsReview {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.caption2)
@@ -150,6 +196,10 @@ struct RecipeCardView: View {
                         .clipShape(Circle())
                         .padding(8)
                 }
+            }
+            .overlay(alignment: .bottomTrailing) {
+                FavoriteButton(recipe: recipe)
+                    .padding(8)
             }
 
             // Info area
