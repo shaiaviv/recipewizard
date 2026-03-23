@@ -170,7 +170,7 @@ struct RecipeCardView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 130)
             .clipped()
-            .overlay(alignment: .topTrailing) {
+            .overlay(alignment: .topLeading) {
                 if recipe.needsReview {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.caption2)
@@ -181,7 +181,7 @@ struct RecipeCardView: View {
                         .padding(8)
                 }
             }
-            .overlay(alignment: .topLeading) {
+            .overlay(alignment: .topTrailing) {
                 FavoriteButton(recipe: recipe)
                     .padding(10)
             }
