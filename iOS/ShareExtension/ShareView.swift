@@ -229,14 +229,6 @@ struct ShareView: View {
                     .transition(.opacity)
             }
 
-            if stage == .failed, let err = errorMessage {
-                Text(err)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
-                    .padding(.top, 4)
-            }
         }
         .animation(.easeInOut(duration: 0.28), value: stage)
     }
