@@ -19,12 +19,23 @@ struct RecipeListView: View {
     }
 
     private var filteredRecipes: [Recipe] {
-        guard !viewModel.searchText.isEmpty else { return recipes }
-        let q = viewModel.searchText.lowercased()
-        return recipes.filter {
-            $0.title.lowercased().contains(q) ||
-            $0.tags.contains(where: { $0.lowercased().contains(q) })
+        var result = recipes
+
+        // Apply category filter first
+        if viewModel.selectedCategory != .all {
+            result = result.filter { viewModel.selectedCategory.matches($0) }
         }
+
+        // Then apply text search
+        if !viewModel.searchText.isEmpty {
+            let q = viewModel.searchText.lowercased()
+            result = result.filter {
+                $0.title.lowercased().contains(q) ||
+                $0.tags.contains(where: { $0.lowercased().contains(q) })
+            }
+        }
+
+        return result
     }
 
     var body: some View {
@@ -38,6 +49,11 @@ struct RecipeListView: View {
                         searchBar
                             .padding(.top, 20)
                             .padding(.horizontal, 20)
+
+                        if !recipes.isEmpty {
+                            categoryStrip
+                                .padding(.top, 16)
+                        }
 
                         if recipes.isEmpty {
                             emptyState
@@ -133,11 +149,60 @@ struct RecipeListView: View {
 
     private var recipeSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("My Recipes")
-                .font(.system(size: 20, weight: .bold, design: .rounded))
-                .padding(.horizontal, 20)
+            HStack {
+                Text(viewModel.selectedCategory == .all ? "My Recipes" : viewModel.selectedCategory.rawValue)
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                Spacer()
+                if filteredRecipes.count != recipes.count {
+                    Text("\(filteredRecipes.count) recipe\(filteredRecipes.count == 1 ? "" : "s")")
+                        .font(.system(size: 13, design: .rounded))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.horizontal, 20)
 
-            recipeGrid
+            if filteredRecipes.isEmpty {
+                noResultsState
+            } else {
+                recipeGrid
+            }
+        }
+    }
+
+    // MARK: - No Results State
+
+    private var noResultsState: some View {
+        VStack(spacing: 12) {
+            Text(viewModel.selectedCategory.icon)
+                .font(.system(size: 44))
+            Text("No \(viewModel.selectedCategory.rawValue.lowercased()) recipes yet")
+                .font(.system(size: 17, weight: .semibold, design: .rounded))
+            Text("Share a recipe video to get started")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 48)
+    }
+
+    // MARK: - Category Strip
+
+    private var categoryStrip: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 9) {
+                ForEach(viewModel.availableCategories(from: recipes), id: \.self) { category in
+                    CategoryChip(
+                        category: category,
+                        isSelected: viewModel.selectedCategory == category
+                    ) {
+                        withAnimation(AppTheme.springBouncy) {
+                            viewModel.selectedCategory = category
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 2)
         }
     }
 
@@ -346,6 +411,41 @@ private struct SettingsRow: View {
             .padding(.vertical, 14)
             .background(AppTheme.cardWhite)
             .clipShape(RoundedRectangle(cornerRadius: AppTheme.sectionRadius, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Category Chip
+
+private struct CategoryChip: View {
+    let category: RecipeListViewModel.RecipeCategory
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Text(category.icon)
+                    .font(.system(size: 15))
+                Text(category.rawValue)
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundStyle(isSelected ? .white : .primary)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
+            .background {
+                if isSelected {
+                    Capsule()
+                        .fill(AppTheme.orange)
+                        .shadow(color: AppTheme.orange.opacity(0.35), radius: 8, y: 3)
+                } else {
+                    Capsule()
+                        .fill(AppTheme.cardWhite)
+                        .shadow(color: .black.opacity(0.07), radius: 6, y: 2)
+                }
+            }
+            .scaleEffect(isSelected ? 1.04 : 1.0)
         }
         .buttonStyle(.plain)
     }
