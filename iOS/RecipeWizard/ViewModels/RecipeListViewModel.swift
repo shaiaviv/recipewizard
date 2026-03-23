@@ -5,11 +5,6 @@ import SwiftData
 final class RecipeListViewModel {
     var searchText = ""
     var sortOrder: SortOrder = .newest
-    var isAddingURL = false
-    var pendingURL = ""
-    var isExtracting = false
-    var extractionStage = ""
-    var extractionError: String?
 
     enum SortOrder: String, CaseIterable {
         case newest = "Newest"
@@ -69,33 +64,4 @@ final class RecipeListViewModel {
         try? context.save()
     }
 
-    // MARK: - Manual URL extraction
-
-    @MainActor
-    func extractRecipe(from url: String, context: ModelContext) async {
-        isExtracting = true
-        extractionError = nil
-
-        let stages = ["Fetching video…", "Reading captions…", "Extracting with AI…"]
-        for stage in stages {
-            extractionStage = stage
-            try? await Task.sleep(for: .milliseconds(800))
-        }
-
-        do {
-            let response = try await RecipeAPIService.shared.extractRecipe(from: url)
-            let recipe = Recipe(from: response)
-            context.insert(recipe)
-            try context.save()
-            isAddingURL = false
-            pendingURL = ""
-        } catch APIError.unauthorized {
-            AuthService.shared.signOut()
-        } catch {
-            extractionError = error.localizedDescription
-        }
-
-        isExtracting = false
-        extractionStage = ""
-    }
 }

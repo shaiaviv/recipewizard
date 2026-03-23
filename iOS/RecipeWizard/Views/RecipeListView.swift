@@ -53,9 +53,6 @@ struct RecipeListView: View {
             }
             .onTapGesture { searchFocused = false }
             .toolbar(.hidden, for: .navigationBar)
-            .sheet(isPresented: $viewModel.isAddingURL) {
-                AddRecipeView(viewModel: viewModel)
-            }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
                     .environment(auth)
@@ -136,29 +133,9 @@ struct RecipeListView: View {
 
     private var recipeSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .center) {
-                Text("My Recipes")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
-
-                Spacer()
-
-                Button {
-                    viewModel.isAddingURL = true
-                } label: {
-                    HStack(spacing: 5) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 11, weight: .bold))
-                        Text("Add")
-                            .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    }
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(AppTheme.orange)
-                    .clipShape(Capsule())
-                }
-            }
-            .padding(.horizontal, 20)
+            Text("My Recipes")
+                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .padding(.horizontal, 20)
 
             recipeGrid
         }
@@ -237,24 +214,6 @@ struct RecipeListView: View {
                     .lineSpacing(3)
             }
 
-            Spacer().frame(height: 32)
-
-            Button {
-                viewModel.isAddingURL = true
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 13, weight: .bold))
-                    Text("Add a Recipe")
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
-                }
-                .foregroundStyle(.white)
-                .padding(.horizontal, 28)
-                .padding(.vertical, 14)
-                .background(AppTheme.orange)
-                .clipShape(Capsule())
-                .shadow(color: AppTheme.orange.opacity(0.35), radius: 12, y: 6)
-            }
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 32)

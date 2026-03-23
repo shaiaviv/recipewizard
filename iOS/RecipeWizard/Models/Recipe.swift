@@ -16,6 +16,7 @@ final class Recipe {
     // CloudKit doesn't support native [String] arrays in SwiftData — encode as JSON
     var tagsData: Data
     var extractionConfidence: Double
+    var reviewDismissed: Bool
     var createdAt: Date
     var updatedAt: Date
 
@@ -39,6 +40,7 @@ final class Recipe {
         self.platform = platform
         self.tagsData = Data()
         self.extractionConfidence = 0
+        self.reviewDismissed = false
         self.createdAt = Date()
         self.updatedAt = Date()
         self.ingredients = []
@@ -82,6 +84,6 @@ final class Recipe {
     }
 
     var needsReview: Bool {
-        extractionConfidence < 0.5
+        extractionConfidence < 0.5 && !reviewDismissed
     }
 }

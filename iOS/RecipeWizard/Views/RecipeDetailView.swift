@@ -111,13 +111,25 @@ struct RecipeDetailView: View {
             // Title + review warning
             VStack(alignment: .leading, spacing: 10) {
                 if recipe.needsReview {
-                    Label("AI wasn't certain — please review", systemImage: "exclamationmark.triangle.fill")
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(AppTheme.amber)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(AppTheme.amber.opacity(0.12))
-                        .clipShape(Capsule())
+                    HStack(spacing: 6) {
+                        Label("AI wasn't certain — please review", systemImage: "exclamationmark.triangle.fill")
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(AppTheme.amber)
+                        Spacer()
+                        Button {
+                            recipe.reviewDismissed = true
+                            recipe.updatedAt = Date()
+                            try? context.save()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(AppTheme.amber.opacity(0.7))
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(AppTheme.amber.opacity(0.12))
+                    .clipShape(Capsule())
                 }
 
                 Text(recipe.title)
