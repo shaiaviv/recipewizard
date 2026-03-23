@@ -113,41 +113,28 @@ private struct AppIconHeroView: View {
     }
 }
 
-// MARK: - Custom Google Sign-In Button
+// MARK: - Google Sign-In Button
 
-private struct GoogleSignInCustomButton: View {
+private struct GoogleSignInButton: View {
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 14) {
-                // Google G badge
-                ZStack {
-                    Circle()
-                        .fill(Color(red: 0.26, green: 0.52, blue: 0.96))
-                        .frame(width: 32, height: 32)
-                    Text("G")
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                }
+            HStack(spacing: 12) {
+                Image("google_g_logo")
+                    .resizable()
+                    .frame(width: 24, height: 24)
 
-                Text("Continue with Google")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Color(red: 0.12, green: 0.08, blue: 0.04))
-
-                Spacer()
-
-                Image(systemName: "arrow.right")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(AppTheme.orange)
+                Text("Sign in with Google")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(Color(red: 0.235, green: 0.255, blue: 0.267))
             }
-            .padding(.horizontal, 20)
             .frame(maxWidth: 304)
-            .frame(height: 58)
+            .frame(height: 52)
             .background {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(Color(red: 0.995, green: 0.970, blue: 0.935))
-                    .shadow(color: .black.opacity(0.18), radius: 20, x: 0, y: 8)
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(.white)
+                    .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 4)
             }
         }
         .buttonStyle(PressAnimationButtonStyle())
@@ -158,18 +145,23 @@ private struct GoogleSignInCustomButton: View {
 
 struct LoginView: View {
     @Environment(AuthService.self) private var auth
+    @Environment(\.colorScheme) private var colorScheme
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var appeared = false
 
     var body: some View {
         ZStack {
-            // Dark charcoal background
+            // Background matches app-wide light/dark theme
             LinearGradient(
-                colors: [
-                    Color(red: 0.067, green: 0.059, blue: 0.051),
-                    Color(red: 0.098, green: 0.090, blue: 0.082),
-                    Color(red: 0.130, green: 0.118, blue: 0.106)
+                colors: colorScheme == .dark ? [
+                    Color(red: 0.055, green: 0.030, blue: 0.090),
+                    Color(red: 0.078, green: 0.048, blue: 0.122),
+                    Color(red: 0.105, green: 0.068, blue: 0.158)
+                ] : [
+                    Color(red: 1.00, green: 0.975, blue: 0.945),
+                    Color(red: 0.99, green: 0.945, blue: 0.875),
+                    Color(red: 0.97, green: 0.905, blue: 0.800)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -205,13 +197,12 @@ struct LoginView: View {
 
                     VStack(spacing: 10) {
                         Text("Recipe Wizard AI")
-                            .font(.custom("Didot-Bold", size: 38))
-                            .foregroundStyle(.white)
-                            .tracking(0.4)
+                            .font(.system(size: 36, weight: .bold, design: .rounded))
+                            .foregroundStyle(.primary)
 
                         Text("Save recipes from TikTok\n& Instagram — instantly.")
                             .font(.system(size: 15))
-                            .foregroundStyle(.white.opacity(0.42))
+                            .foregroundStyle(.primary.opacity(0.50))
                             .multilineTextAlignment(.center)
                             .lineSpacing(4)
                     }
@@ -233,11 +224,11 @@ struct LoginView: View {
                                 .tint(AppTheme.orange)
                             Text("Signing in…")
                                 .font(.system(size: 15, weight: .medium))
-                                .foregroundStyle(.white.opacity(0.50))
+                                .foregroundStyle(.primary.opacity(0.50))
                         }
                         .frame(height: 58)
                     } else {
-                        GoogleSignInCustomButton(action: handleSignIn)
+                        GoogleSignInButton(action: handleSignIn)
                     }
 
                     if let error = errorMessage {
@@ -250,7 +241,7 @@ struct LoginView: View {
 
                     Text("By continuing you agree to our Terms & Privacy Policy.")
                         .font(.system(size: 11))
-                        .foregroundStyle(.white.opacity(0.20))
+                        .foregroundStyle(.primary.opacity(0.28))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 44)
                 }

@@ -7,7 +7,7 @@ enum AppTheme {
     static let orange     = Color(red: 0.97, green: 0.59, blue: 0.19)
     static let orangeLight = Color(red: 0.97, green: 0.59, blue: 0.19).opacity(0.12)
     static let amber      = Color(red: 0.83, green: 0.51, blue: 0.063)
-    static let espresso   = Color(red: 0.11, green: 0.07, blue: 0.04)
+    static let espresso   = Color(red: 0.08, green: 0.04, blue: 0.12)
 
     // Keep terracotta as alias so existing views compile
     static var terracotta: Color { orange }
@@ -15,14 +15,14 @@ enum AppTheme {
     /// Light warm peach in light mode, refined charcoal in dark mode (used for toolbars)
     static let warmCanvas = Color(UIColor { traits in
         traits.userInterfaceStyle == .dark
-            ? UIColor(red: 0.10, green: 0.09, blue: 0.085, alpha: 1)  // refined charcoal
+            ? UIColor(red: 0.085, green: 0.055, blue: 0.120, alpha: 1)  // refined plum
             : UIColor(red: 0.99, green: 0.96, blue: 0.89, alpha: 1)   // warm peach
     })
 
     /// White in light mode, elevated charcoal card in dark mode
     static let cardWhite = Color(UIColor { traits in
         traits.userInterfaceStyle == .dark
-            ? UIColor(red: 0.155, green: 0.145, blue: 0.135, alpha: 1) // elevated charcoal card
+            ? UIColor(red: 0.200, green: 0.145, blue: 0.265, alpha: 1) // elevated plum card
             : UIColor.white
     })
 
@@ -51,9 +51,9 @@ struct AppBackground: View {
     var body: some View {
         LinearGradient(
             colors: colorScheme == .dark ? [
-                Color(red: 0.067, green: 0.059, blue: 0.051), // deep charcoal
-                Color(red: 0.098, green: 0.090, blue: 0.082), // mid charcoal
-                Color(red: 0.130, green: 0.118, blue: 0.106)  // lifted charcoal
+                Color(red: 0.055, green: 0.030, blue: 0.090), // deep plum
+                Color(red: 0.078, green: 0.048, blue: 0.122), // mid plum
+                Color(red: 0.105, green: 0.068, blue: 0.158)  // lifted plum
             ] : [
                 Color(red: 1.00, green: 0.975, blue: 0.945), // warm ivory
                 Color(red: 0.99, green: 0.945, blue: 0.875), // golden cream
@@ -128,8 +128,8 @@ struct FavoriteButton: View {
             Image(systemName: favorited ? "heart.fill" : "heart")
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(favorited
-                    ? Color(red: 0.96, green: 0.27, blue: 0.40)
-                    : .white)
+                    ? AppTheme.orange
+                    : .white.opacity(0.80))
                 .shadow(color: .black.opacity(0.35), radius: 3, x: 0, y: 1)
                 .scaleEffect(heartScale)
                 .animation(.spring(response: 0.35, dampingFraction: 0.72), value: recipe.isFavorited)
