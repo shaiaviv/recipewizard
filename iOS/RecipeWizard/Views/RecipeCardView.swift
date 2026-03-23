@@ -115,7 +115,7 @@ struct FavoriteButton: View {
 
     var body: some View {
         Button {
-            recipe.isFavorited.toggle()
+            recipe.isFavorited = !(recipe.isFavorited == true)
             // Two-phase pump: quick snap up, then spring settle
             withAnimation(.spring(response: 0.20, dampingFraction: 0.42)) {
                 heartScale = 1.45
@@ -124,10 +124,11 @@ struct FavoriteButton: View {
                 heartScale = 1.0
             }
         } label: {
+            let favorited = recipe.isFavorited == true
             ZStack {
                 // Rounded-square badge — echoes the app icon shape
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(recipe.isFavorited
+                    .fill(favorited
                           ? AnyShapeStyle(LinearGradient(
                               colors: [Color(red: 0.96, green: 0.27, blue: 0.40),
                                        Color(red: 0.82, green: 0.14, blue: 0.28)],
@@ -136,16 +137,16 @@ struct FavoriteButton: View {
                           : AnyShapeStyle(.regularMaterial))
                     .frame(width: 34, height: 34)
                     .shadow(
-                        color: recipe.isFavorited
+                        color: favorited
                             ? Color(red: 0.96, green: 0.27, blue: 0.40).opacity(0.50)
                             : .black.opacity(0.10),
-                        radius: recipe.isFavorited ? 10 : 4,
-                        y: recipe.isFavorited ? 4 : 2
+                        radius: favorited ? 10 : 4,
+                        y: favorited ? 4 : 2
                     )
 
-                Image(systemName: recipe.isFavorited ? "heart.fill" : "heart")
+                Image(systemName: favorited ? "heart.fill" : "heart")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(recipe.isFavorited ? .white : Color(red: 0.96, green: 0.27, blue: 0.40))
+                    .foregroundStyle(favorited ? .white : Color(red: 0.96, green: 0.27, blue: 0.40))
                     .scaleEffect(heartScale)
             }
             .animation(.spring(response: 0.35, dampingFraction: 0.72), value: recipe.isFavorited)

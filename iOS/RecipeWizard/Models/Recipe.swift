@@ -17,7 +17,7 @@ final class Recipe {
     var tagsData: Data
     var extractionConfidence: Double
     var reviewDismissed: Bool?
-    var isFavorited: Bool
+    var isFavorited: Bool?
     var createdAt: Date
     var updatedAt: Date
 
@@ -41,7 +41,6 @@ final class Recipe {
         self.platform = platform
         self.tagsData = Data()
         self.extractionConfidence = 0
-        self.isFavorited = false
         self.createdAt = Date()
         self.updatedAt = Date()
         self.ingredients = []

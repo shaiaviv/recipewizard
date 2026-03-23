@@ -37,7 +37,8 @@ struct RecipeListView: View {
 
         // Favorites always float to the top; stable sort preserves date order within groups
         return result.sorted { a, b in
-            if a.isFavorited != b.isFavorited { return a.isFavorited }
+            let af = a.isFavorited == true, bf = b.isFavorited == true
+            if af != bf { return af }
             return a.createdAt > b.createdAt
         }
     }
@@ -91,7 +92,12 @@ struct RecipeListView: View {
     // MARK: - Header
 
     private var headerSection: some View {
-        HStack(alignment: .top, spacing: 0) {
+        HStack(alignment: .center, spacing: 12) {
+            Image("MascotIcon")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 52, height: 52)
+
             VStack(alignment: .leading, spacing: 5) {
                 Text("Hello, \(firstName)!")
                     .font(.system(size: 30, weight: .bold, design: .rounded))
@@ -229,12 +235,12 @@ struct RecipeListView: View {
                 .contextMenu {
                     Button {
                         withAnimation(AppTheme.springBouncy) {
-                            recipe.isFavorited.toggle()
+                            recipe.isFavorited = !(recipe.isFavorited == true)
                         }
                     } label: {
                         Label(
-                            recipe.isFavorited ? "Remove from Favorites" : "Add to Favorites",
-                            systemImage: recipe.isFavorited ? "heart.slash" : "heart"
+                            recipe.isFavorited == true ? "Remove from Favorites" : "Add to Favorites",
+                            systemImage: recipe.isFavorited == true ? "heart.slash" : "heart"
                         )
                     }
                     Button(role: .destructive) {

@@ -84,7 +84,7 @@ final class RecipeListViewModel {
         func matches(_ recipe: Recipe) -> Bool {
             switch self {
             case .all:       return true
-            case .favorites: return recipe.isFavorited
+            case .favorites: return recipe.isFavorited == true
             default:
                 let haystack = ([recipe.title] + recipe.tags).joined(separator: " ").lowercased()
                 return keywords.contains(where: { haystack.contains($0) })
@@ -97,7 +97,7 @@ final class RecipeListViewModel {
         RecipeCategory.allCases.filter { category in
             switch category {
             case .all:       return true
-            case .favorites: return recipes.contains(where: { $0.isFavorited })
+            case .favorites: return recipes.contains(where: { $0.isFavorited == true })
             default:         return recipes.contains(where: { category.matches($0) })
             }
         }
