@@ -1,9 +1,15 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { VideoMetadata } from "../types/response";
 
-const SYSTEM_PROMPT = `You are a culinary AI assistant that extracts structured recipe data from social media video metadata.
+const SYSTEM_PROMPT = `You are a culinary AI assistant that analyses social media video metadata.
 You receive video titles, descriptions/captions, and sometimes a thumbnail image.
-Extract all recipe information into precise JSON. Rules:
+Your first job is to decide: is this actually a recipe or cooking video?
+
+CRITICAL RULE — set "is_recipe": false (and leave all other fields null/empty) if the video is NOT a recipe or cooking instruction. Examples of non-recipe content: travel vlogs, fitness/workout, comedy sketches, product reviews, restaurant visits without a recipe, lifestyle content, music videos, etc.
+
+Only set "is_recipe": true if the video teaches the viewer how to make or cook something at home.
+
+When is_recipe is true, extract all recipe information into precise JSON. Additional rules:
 - Be literal with measurements — never invent quantities not mentioned in the source
 - If a field is unclear or missing, use null rather than guessing
 - Combine duplicate ingredients (e.g. "2 cloves garlic" mentioned twice → list once)
@@ -45,7 +51,7 @@ export function buildExtractionPrompt(
       ? metadata.description.slice(0, 3000)
       : "(no caption available)";
 
-  const textContent = `Extract the recipe from this social media cooking video.
+  const textContent = `Analyse this social media video and extract the recipe if it is one.
 
 Platform: ${metadata.platform}
 Video Title: ${metadata.title}

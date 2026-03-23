@@ -4,6 +4,13 @@ import { VideoMetadata, RecipeResponse, Ingredient, RecipeStep } from "../types/
 
 const client = new Anthropic();
 
+export class NotARecipeError extends Error {
+  constructor() {
+    super("This video does not appear to be a recipe or cooking video");
+    this.name = "NotARecipeError";
+  }
+}
+
 interface RawExtraction {
   title?: string;
   cook_time_minutes?: number | null;
@@ -17,10 +24,8 @@ interface RawExtraction {
 }
 
 export function parseClaudeResponse(text: string): RawExtraction {
-  // Extract JSON from ```json ... ``` block
   const match = text.match(/```json\s*([\s\S]*?)```/);
   if (!match) {
-    // Try to parse raw JSON as fallback
     try {
       return JSON.parse(text);
     } catch {
@@ -30,10 +35,39 @@ export function parseClaudeResponse(text: string): RawExtraction {
   return JSON.parse(match[1]);
 }
 
+async function isRecipeVideo(metadata: VideoMetadata): Promise<boolean> {
+  const prompt = `Video title: ${metadata.title}
+Creator: ${metadata.uploader}
+Caption (first 500 chars): ${metadata.description.slice(0, 500) || "(none)"}
+
+Does this video teach the viewer how to cook or make a recipe at home?
+Reply with only YES or NO.`;
+
+  const response = await client.messages.create({
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 5,
+    system: "You classify social media videos. Reply with only YES or NO.",
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  const answer = response.content[0].type === "text"
+    ? response.content[0].text.trim().toUpperCase()
+    : "NO";
+
+  console.log("[claude] isRecipeVideo answer:", answer);
+  return answer.startsWith("YES");
+}
+
 export async function extractRecipeFromVideo(
   metadata: VideoMetadata,
   thumbnailBase64: string | null
 ): Promise<Omit<RecipeResponse, "source_url" | "platform" | "thumbnail_url" | "thumbnail_base64" | "raw_caption">> {
+  // Fast, cheap pre-check before running the full extraction
+  const isRecipe = await isRecipeVideo(metadata);
+  if (!isRecipe) {
+    throw new NotARecipeError();
+  }
+
   const { system, messages } = buildExtractionPrompt(metadata, thumbnailBase64);
 
   const response = await client.messages.create({

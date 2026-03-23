@@ -67,6 +67,11 @@ actor RecipeAPIService {
         case 401:
             throw APIError.unauthorized
         case 422:
+            // Try to surface the specific error message from the backend
+            if let body = try? JSONDecoder().decode([String: String].self, from: data),
+               let msg = body["error"] {
+                throw APIError.extractionFailed(msg)
+            }
             throw APIError.unsupportedURL
         default:
             let msg = String(data: data, encoding: .utf8) ?? "HTTP \(httpResponse.statusCode)"

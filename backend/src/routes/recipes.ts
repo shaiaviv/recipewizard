@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { ExtractRequest } from "../types/request";
 import { extractVideoMetadata } from "../services/videoExtractor";
-import { extractRecipeFromVideo } from "../services/claudeService";
+import { extractRecipeFromVideo, NotARecipeError } from "../services/claudeService";
 import { downloadAndEncodeImage } from "../services/imageService";
 import { generateRecipeImage } from "../services/imageGenerationService";
 import { isSupportedUrl, extractUrlFromText } from "../utils/urlValidator";
@@ -66,6 +66,10 @@ router.post("/extract", requireAuth, async (req: Request, res: Response) => {
   try {
     recipeData = await extractRecipeFromVideo(metadata, thumbnailBase64);
   } catch (err) {
+    if (err instanceof NotARecipeError) {
+      res.status(422).json({ error: err.message });
+      return;
+    }
     console.error("[recipes] Claude extraction failed:", err);
     res.status(500).json({
       error: "AI recipe extraction failed",
