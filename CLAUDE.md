@@ -54,11 +54,11 @@ The route handler in `routes/recipes.ts` orchestrates these three services. `uti
 
 ### Mascot
 
-The app mascot is a purple cauldron named **Cauldy**. He has two variants:
+The app mascot is a purple cauldron named **Cauldy the Wizard**. He has two variants:
 - `MascotIcon` (happy) — used in the main app header, `iOS/RecipeWizard/Resources/Assets.xcassets/MascotIcon.imageset/`
 - `MascotSad` (sad, with flying chef hat) — used in the Share Extension error state, `iOS/ShareExtension/Assets.xcassets/MascotSad.imageset/`
 
-When writing UI copy that references the mascot, use "Cauldy" by name.
+When writing UI copy that references the mascot, use "Cauldy the Wizard" by name.
 
 ### iOS (`iOS/`)
 

@@ -47,7 +47,7 @@ struct ShareView: View {
             case .extractingWithAI: return ""
             case .saving:           return "Adding to your collection"
             case .done:             return "Open RecipeWizard to view it"
-            case .failed:           return "Cauldy the wizard is confused, try another video"
+            case .failed:           return "Cauldy the Wizard is confused, try another video"
             }
         }
 
