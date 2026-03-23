@@ -52,6 +52,14 @@ Three-stage pipeline triggered by `POST /api/v1/extract`:
 
 The route handler in `routes/recipes.ts` orchestrates these three services. `utils/urlValidator.ts` handles URL normalization, including extracting URLs from TikTok share copy text.
 
+### Mascot
+
+The app mascot is a purple cauldron named **Cauldy**. He has two variants:
+- `MascotIcon` (happy) — used in the main app header, `iOS/RecipeWizard/Resources/Assets.xcassets/MascotIcon.imageset/`
+- `MascotSad` (sad, with flying chef hat) — used in the Share Extension error state, `iOS/ShareExtension/Assets.xcassets/MascotSad.imageset/`
+
+When writing UI copy that references the mascot, use "Cauldy" by name.
+
 ### iOS (`iOS/`)
 
 **Two targets** share code in `iOS/Shared/`:

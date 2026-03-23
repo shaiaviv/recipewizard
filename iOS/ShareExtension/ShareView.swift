@@ -10,6 +10,8 @@ struct ShareView: View {
     @State private var errorMessage: String?
     @State private var showConfetti = false
     @State private var pulseScale: CGFloat = 1.0
+    @State private var sadFloat: CGFloat = 0
+    @State private var sadRotation: Double = 0
 
     // Local theme constants — AppTheme lives in the main target, not the extension
     private let orange = Color(red: 0.97, green: 0.59, blue: 0.19)
@@ -33,7 +35,7 @@ struct ShareView: View {
             case .extractingWithAI: return "Cooking your recipe"
             case .saving:           return "Saving recipe"
             case .done:             return "Recipe saved!"
-            case .failed:           return "Something went wrong"
+            case .failed:           return "Couldn't extract the recipe"
             }
         }
 
@@ -45,7 +47,7 @@ struct ShareView: View {
             case .extractingWithAI: return ""
             case .saving:           return "Adding to your collection"
             case .done:             return "Open RecipeWizard to view it"
-            case .failed:           return ""
+            case .failed:           return "Cauldy the wizard is confused, try another video"
             }
         }
 
@@ -148,6 +150,35 @@ struct ShareView: View {
     // MARK: - Icon Area (non-cooking stages)
 
     private var iconArea: some View {
+        Group {
+            if stage == .failed {
+                sadMascotArea
+            } else {
+                normalIconArea
+            }
+        }
+        .animation(.spring(response: 0.45, dampingFraction: 0.72), value: stage)
+    }
+
+    private var sadMascotArea: some View {
+        Image("MascotSad")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 180, height: 180)
+            .offset(y: sadFloat)
+            .rotationEffect(.degrees(sadRotation))
+            .id("sad")
+            .onAppear {
+                withAnimation(.easeInOut(duration: 3.2).repeatForever(autoreverses: true)) {
+                    sadFloat = -12
+                }
+                withAnimation(.easeInOut(duration: 2.1).repeatForever(autoreverses: true)) {
+                    sadRotation = 4
+                }
+            }
+    }
+
+    private var normalIconArea: some View {
         ZStack {
             if !stage.isTerminal {
                 Circle()
@@ -173,7 +204,6 @@ struct ShareView: View {
             }
         }
         .frame(width: 190, height: 190)
-        .animation(.spring(response: 0.45, dampingFraction: 0.72), value: stage)
     }
 
     // MARK: - Label Area (non-cooking stages)
@@ -263,7 +293,7 @@ struct ShareView: View {
             onDismiss()
         } catch APIError.unauthorized {
             setStage(.failed)
-            errorMessage = "Sign in to RecipeWizard first, then try sharing again."
+            errorMessage = "Open RecipeWizard and sign in first, then try again."
         } catch {
             setStage(.failed)
             errorMessage = error.localizedDescription

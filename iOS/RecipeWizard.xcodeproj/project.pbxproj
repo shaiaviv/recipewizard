@@ -10,6 +10,7 @@
 		08258660F2C5D31F6D5A3904 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = F6F88AF551DF4A5594795857 /* GoogleSignIn */; };
 		0D099200AB8C90782BB0F889 /* EditRecipeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57B1FEC6ED2BAE6F22807CC3 /* EditRecipeView.swift */; };
 		0FB9FD82905075BEBF578868 /* SharedConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D10A06B4027119D7B825A8 /* SharedConstants.swift */; };
+		0FBFC906B0751C07E7D7EA32 /* CategoryIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A281E01E50C0757358A8CE /* CategoryIcon.swift */; };
 		1D8DB31F8E8B34EA21B959FB /* RecipeAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 243BDD21F0CB3FEE89AC93FA /* RecipeAPIService.swift */; };
 		28E0C9F4ECAF5AED10BDD0E9 /* RecipeListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E83359A7C80BF3A10DF77563 /* RecipeListView.swift */; };
 		32AA668A29AD427CDFCB16A7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 877A066652C72E1D9C721B4A /* Assets.xcassets */; };
@@ -23,6 +24,7 @@
 		AAE042830ED664B04A6C9E11 /* RecipeCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78512FBC1D286B1FB045608A /* RecipeCardView.swift */; };
 		B5593116E4A2255899B4AEA0 /* RecipeListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74F49DAC8077DCB560EAFF7 /* RecipeListViewModel.swift */; };
 		B5A1ABF04634CD35395836BC /* SharedModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A210E99D1A77B5187382F /* SharedModels.swift */; };
+		B74311CD890ADCE4E3FB0E56 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA6BD0200F60CBDCC925D67E /* Assets.xcassets */; };
 		BBBBE0FDE46CA7F5C36ADA8B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E63E5C701D67979EF4D5B502 /* ContentView.swift */; };
 		C2703C28F4664E99119CAAC6 /* SharedConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D10A06B4027119D7B825A8 /* SharedConstants.swift */; };
 		C85EAECD109BFCD0B6F50510 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB8DCC714A7C7C8173DC451C /* ShareViewController.swift */; };
@@ -74,11 +76,13 @@
 		90F56DA27BA7FF6ECB8B15BB /* Ingredient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ingredient.swift; sourceTree = "<group>"; };
 		A5F6EE5A442B07C39F1D479A /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		A74F49DAC8077DCB560EAFF7 /* RecipeListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeListViewModel.swift; sourceTree = "<group>"; };
+		B4A281E01E50C0757358A8CE /* CategoryIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryIcon.swift; sourceTree = "<group>"; };
 		B58A705FCAEF6F97239D9B5C /* Recipe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recipe.swift; sourceTree = "<group>"; };
 		BDB75CDF2C39265CE3EFB1FA /* ShareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareView.swift; sourceTree = "<group>"; };
 		C1B6218A703E1762B622AD2B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D09A210E99D1A77B5187382F /* SharedModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedModels.swift; sourceTree = "<group>"; };
 		D8AA0075B0126FC3111B3296 /* RecipeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeDetailView.swift; sourceTree = "<group>"; };
+		DA6BD0200F60CBDCC925D67E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E3D10A06B4027119D7B825A8 /* SharedConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedConstants.swift; sourceTree = "<group>"; };
 		E63E5C701D67979EF4D5B502 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		E83359A7C80BF3A10DF77563 /* RecipeListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeListView.swift; sourceTree = "<group>"; };
@@ -170,6 +174,7 @@
 		C662FA0A15265DACE62BB60B /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B4A281E01E50C0757358A8CE /* CategoryIcon.swift */,
 				57B1FEC6ED2BAE6F22807CC3 /* EditRecipeView.swift */,
 				A5F6EE5A442B07C39F1D479A /* LoginView.swift */,
 				78512FBC1D286B1FB045608A /* RecipeCardView.swift */,
@@ -192,6 +197,7 @@
 		E0CB4BA5E69A74B3851A1105 /* ShareExtension */ = {
 			isa = PBXGroup;
 			children = (
+				DA6BD0200F60CBDCC925D67E /* Assets.xcassets */,
 				C1B6218A703E1762B622AD2B /* Info.plist */,
 				203B49DE89D5480D1C30F238 /* ShareExtension.entitlements */,
 				BDB75CDF2C39265CE3EFB1FA /* ShareView.swift */,
@@ -231,6 +237,7 @@
 			buildConfigurationList = A302DD64EFC300213864E7EF /* Build configuration list for PBXNativeTarget "ShareExtension" */;
 			buildPhases = (
 				ABEE37177B1EB7CA6CA0FC6C /* Sources */,
+				E091F393EA8A22201E6D2F65 /* Resources */,
 				7650DB1CEA24375A97272DB0 /* Frameworks */,
 			);
 			buildRules = (
@@ -284,6 +291,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E091F393EA8A22201E6D2F65 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B74311CD890ADCE4E3FB0E56 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -292,10 +307,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				6C96A879CF66B1D1531C0539 /* AuthService.swift in Sources */,
+				0FBFC906B0751C07E7D7EA32 /* CategoryIcon.swift in Sources */,
 				BBBBE0FDE46CA7F5C36ADA8B /* ContentView.swift in Sources */,
 				0D099200AB8C90782BB0F889 /* EditRecipeView.swift in Sources */,
 				E5B631361CB043B28ADC5B05 /* Ingredient.swift in Sources */,
-					FC47373ED25B5D6B29226030 /* LoginView.swift in Sources */,
+				FC47373ED25B5D6B29226030 /* LoginView.swift in Sources */,
 				740691A393A95E7D9A71571F /* Recipe.swift in Sources */,
 				FF15C1946C3CF971B5FB9E90 /* RecipeAPIService.swift in Sources */,
 				AAE042830ED664B04A6C9E11 /* RecipeCardView.swift in Sources */,
