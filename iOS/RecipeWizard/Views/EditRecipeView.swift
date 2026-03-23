@@ -45,6 +45,22 @@ struct EditRecipeView: View {
                         ))
                     }
                 }
+
+                Section("Instructions") {
+                    ForEach(recipe.steps.sorted(by: { $0.stepNumber < $1.stepNumber })) { step in
+                        HStack(alignment: .top, spacing: 10) {
+                            Text("\(step.stepNumber).")
+                                .foregroundStyle(.secondary)
+                                .frame(width: 24, alignment: .leading)
+                                .padding(.top, 8)
+                            TextField("Step \(step.stepNumber)", text: Binding(
+                                get: { step.instruction },
+                                set: { step.instruction = $0 }
+                            ), axis: .vertical)
+                            .lineLimit(2...)
+                        }
+                    }
+                }
             }
             .navigationTitle("Edit Recipe")
             .navigationBarTitleDisplayMode(.inline)
