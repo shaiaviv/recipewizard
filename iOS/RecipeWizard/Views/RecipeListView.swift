@@ -92,18 +92,29 @@ struct RecipeListView: View {
     // MARK: - Header
 
     private var headerSection: some View {
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .center, spacing: 10) {
             Image("MascotIcon")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 52, height: 52)
+                .frame(width: 64, height: 64)
+                .padding(.leading, -4)
+                .offset(y: iconFloat)
+                .onAppear {
+                    withAnimation(
+                        .easeInOut(duration: 2.8).repeatForever(autoreverses: true)
+                    ) {
+                        iconFloat = -8
+                    }
+                }
 
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text("Hello, \(firstName)!")
-                    .font(.system(size: 30, weight: .bold, design: .rounded))
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
                 Text("What would you like to cook?")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
             }
 
             Spacer()
@@ -121,7 +132,7 @@ struct RecipeListView: View {
             }
         }
         .padding(.horizontal, 20)
-        .padding(.top, 60)
+        .padding(.top, 28)
     }
 
     // MARK: - Search Bar
@@ -450,15 +461,18 @@ private struct CategoryChip: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: 7) {
-                // Emoji bubble
+                // Icon bubble
                 ZStack {
                     Circle()
                         .fill(isSelected
                               ? Color.white.opacity(0.22)
                               : category.color.opacity(0.13))
                         .frame(width: 46, height: 46)
-                    Text(category.icon)
-                        .font(.system(size: 22))
+                    CategoryIcon(
+                        category: category,
+                        color: isSelected ? .white : category.color,
+                        size: 22
+                    )
                 }
 
                 // Label
