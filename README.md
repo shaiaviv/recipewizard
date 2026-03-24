@@ -6,25 +6,53 @@ Inspired by [Honeydew](https://honeydewcook.com/).
 
 ---
 
-## Screenshots
+## How it works
 
-| Sign in | Share sheet | Cauldy working |
-|:---:|:---:|:---:|
-| <img src="docs/screenshots/01_login.png" width="180"> | <img src="docs/screenshots/02_share_sheet.png" width="180"> | <img src="docs/screenshots/03_share_loading.png" width="180"> |
+#### 1. Sign in with Google
 
-| Recipe saved | Recipe list | Recipe detail |
-|:---:|:---:|:---:|
-| <img src="docs/screenshots/04_share_done.png" width="180"> | <img src="docs/screenshots/05_recipe_list.png" width="180"> | <img src="docs/screenshots/06_recipe_detail.png" width="180"> |
+<img src="docs/screenshots/01_login.png" width="220">
+
+Open the app and sign in once with your Google account. Your recipe book is tied to your account so it's always available.
 
 ---
 
-## How it works
+#### 2. Share any TikTok or Instagram recipe video
 
-1. Open a TikTok or Instagram Reel
-2. Tap **Share** → select **RecipeWizard** from the share sheet
-3. The app sends the URL to the backend, which fetches the video metadata using yt-dlp
-4. Claude AI extracts a structured recipe from the caption + thumbnail
-5. The recipe appears in your recipe book
+<img src="docs/screenshots/02_share_sheet.png" width="220">
+
+While browsing TikTok or Instagram, tap the share button on any recipe video and select **RecipeWizard** from the share sheet. You never have to leave your feed.
+
+---
+
+#### 3. Cauldy the Wizard gets to work
+
+<img src="docs/screenshots/03_share_loading.png" width="220">
+
+The app fetches the video metadata, reads the caption, and sends everything to Claude AI to extract a structured recipe. Cauldy dances while he cooks it up — the whole thing takes about 20 seconds.
+
+---
+
+#### 4. Recipe saved
+
+<img src="docs/screenshots/04_share_done.png" width="220">
+
+Done. The recipe is saved to your book. The sheet closes automatically and you're back in your feed.
+
+---
+
+#### 5. Browse your recipe book
+
+<img src="docs/screenshots/05_recipe_list.png" width="220">
+
+All your saved recipes in one place. Filter by category, search by name or tag, and favorite the ones you make most. The two-column grid shows the recipe thumbnail, cook time, and ingredient count at a glance.
+
+---
+
+#### 6. Cook from the recipe
+
+<img src="docs/screenshots/06_recipe_detail.png" width="220">
+
+Tap any recipe to see the full details — ingredients, step-by-step instructions with per-step timers, and a link back to the original video. Tap an ingredient to check it off as you cook.
 
 ---
 
