@@ -6,6 +6,18 @@ Inspired by [Honeydew](https://honeydewcook.com/).
 
 ---
 
+## Screenshots
+
+| Sign in | Share sheet | Cauldy working |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/01_login.png" width="180"> | <img src="docs/screenshots/02_share_sheet.png" width="180"> | <img src="docs/screenshots/03_share_loading.png" width="180"> |
+
+| Recipe saved | Recipe list | Recipe detail |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/04_share_done.png" width="180"> | <img src="docs/screenshots/05_recipe_list.png" width="180"> | <img src="docs/screenshots/06_recipe_detail.png" width="180"> |
+
+---
+
 ## How it works
 
 1. Open a TikTok or Instagram Reel
