@@ -6,6 +6,22 @@ Inspired by [Honeydew](https://honeydewcook.com/).
 
 ---
 
+## Code Explanation
+
+Interactive study kit published at **[shaiaviv.github.io/recipewizard](https://shaiaviv.github.io/recipewizard/)** — annotated walkthroughs of every function, architecture diagrams, and interview prep.
+
+| Page | What it covers |
+|------|---------------|
+| [Hub](https://shaiaviv.github.io/recipewizard/) | Navigation, runtime flow summary, quick-reference function table |
+| [Code Walkthrough](https://shaiaviv.github.io/recipewizard/code-walkthrough.html) | Every file, every function, every line annotated with TypeScript signatures |
+| [Execution Order](https://shaiaviv.github.io/recipewizard/execution-order.html) | All code in the exact order it runs for a single `POST /api/v1/extract` request, with call-origin side notes |
+| [Architecture](https://shaiaviv.github.io/recipewizard/architecture.html) | Visual call graph with argument types, return values, and data flow |
+| [Interview Prep](https://shaiaviv.github.io/recipewizard/interview-prep.html) | 15 Q&As covering library choices, edge cases, scaling, and code gotchas |
+| [Deep Dive: Claude Service](https://shaiaviv.github.io/recipewizard/deep-dive-claudeservice.html) | Two-stage AI pipeline, response parsing, and error handling |
+| [Deep Dive: LLM Prompts](https://shaiaviv.github.io/recipewizard/deep-dive-llm.html) | Every sentence of `SYSTEM_PROMPT` and `RECIPE_SCHEMA` dissected |
+
+---
+
 ## How it works
 
 #### 1. Sign in with Google
