@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architecture — RecipeWizard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&family=JetBrains Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--green:#3fb950;--green-dim:#1a3a20;--blue:#58a6ff;--blue-dim:#0d2a4a;--orange:#d29922;--orange-dim:#3a2a00;--purple:#bc8cff;--purple-dim:#2d1f4a;--red:#f85149;--red-dim:#3a1010;--yellow:#e3b341;--yellow-dim:#3a2e00;--cyan:#39c5cf;--cyan-dim:#0d3038;--ai:#e879f9;--ai-dim:#3a1050}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Heebo',sans-serif;line-height:1.6}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+nav{position:sticky;top:0;background:rgba(13,17,23,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);z-index:100;padding:0 24px;height:52px;display:flex;align-items:center;gap:24px}
+.logo{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:14px}
+.nav-links{display:flex;gap:16px;margin-left:auto}
+.nav-links a{font-size:13px;color:var(--muted)}
+.nav-links a:hover{color:var(--text);text-decoration:none}
+.container{max-width:1100px;margin:0 auto;padding:32px 24px}
+h1{font-size:28px;font-weight:900;margin-bottom:8px}
+code{font-family:'JetBrains Mono',monospace;font-size:.88em;background:var(--surface2);padding:1px 5px;border-radius:4px}
+section{margin:48px 0}
+.section-title{font-size:22px;font-weight:700;margin-bottom:24px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.fb{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:1px 7px;border-radius:4px;margin-right:4px;vertical-align:middle}
+.fb-index{background:var(--blue-dim);color:var(--blue)}
+.fb-recipes{background:var(--green-dim);color:var(--green)}
+.fb-auth{background:var(--purple-dim);color:var(--purple)}
+.fb-video{background:var(--orange-dim);color:var(--orange)}
+.fb-image{background:var(--red-dim);color:var(--red)}
+.fb-claude{background:var(--ai-dim);color:var(--ai)}
+.fb-imggen{background:var(--cyan-dim);color:var(--cyan)}
+.fb-recipe-svc{background:var(--green-dim);color:var(--green)}
+.fb-user-svc{background:var(--blue-dim);color:var(--blue)}
+.fb-authmw{background:var(--yellow-dim);color:var(--yellow)}
+.fb-prompt{background:var(--ai-dim);color:var(--ai)}
+.fb-url{background:var(--orange-dim);color:var(--orange)}
+.fb-prisma{background:var(--cyan-dim);color:var(--cyan)}
+.fb-ios{background:var(--orange-dim);color:var(--orange)}
+/* Component map */
+.comp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.comp-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;border-left:4px solid}
+.comp-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;margin-bottom:8px}
+.comp-row{display:flex;gap:8px;margin-top:6px;font-size:12px;color:var(--muted);align-items:flex-start}
+.comp-label{font-size:10px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;font-weight:700;width:52px;flex-shrink:0;padding-top:1px}
+/* Call graph */
+.call-graph{display:flex;flex-direction:column;align-items:center;gap:0}
+.call-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;width:100%;max-width:700px;border-left:4px solid}
+.call-card-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.call-fn{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--text)}
+.call-desc{font-size:13px;color:var(--muted);line-height:1.6}
+.call-return{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);margin-top:6px;display:block}
+.call-arg{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--orange)}
+.arrow{font-size:22px;color:var(--muted);padding:6px 0;text-align:center;font-family:'JetBrains Mono',monospace}
+.arrow-label{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:-4px;margin-bottom:4px;text-align:center}
+/* Tech table */
+.tech-table{width:100%;border-collapse:collapse;font-size:13px}
+.tech-table th{background:var(--surface2);color:var(--muted);font-size:11px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.6px;padding:8px 12px;text-align:left;border-bottom:2px solid var(--border)}
+.tech-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+.tech-table tr:hover td{background:var(--surface)}
+/* Data flow */
+.data-flow{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin:16px 0}
+.df-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-family:'JetBrains Mono',monospace;text-align:center;min-width:100px}
+.df-arrow{color:var(--muted);font-size:18px;padding:0 8px;flex-shrink:0}
+.df-type{font-size:10px;color:var(--muted);margin-top:3px}
+/* Limitations */
+.limit-list{display:flex;flex-direction:column;gap:10px}
+.limit-item{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--yellow);border-radius:8px;padding:12px 16px}
+.limit-title{font-weight:700;font-size:14px;margin-bottom:4px}
+.limit-desc{font-size:13px;color:var(--muted);line-height:1.6}
+/* Patterns */
+.pattern-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.pattern-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+.pattern-name{font-weight:700;font-size:14px;margin-bottom:6px;color:var(--purple)}
+.pattern-desc{font-size:13px;color:var(--muted);line-height:1.6}
+@media(max-width:768px){.comp-grid{grid-template-columns:1fr}.call-card{max-width:100%}.data-flow{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">← RecipeWizard Study Kit</a>
+  <div class="nav-links">
+    <a href="#overview">Overview</a>
+    <a href="#components">Components</a>
+    <a href="#callgraph">Call Graph</a>
+    <a href="#tech">Technology</a>
+    <a href="#patterns">Patterns</a>
+    <a href="#limits">Limitations</a>
+  </div>
+</nav>
+
+<div class="container">
+<h1>Architecture &amp; Data Flow</h1>
+<p style="color:var(--muted);font-size:15px;margin-bottom:40px">How RecipeWizard is structured, why each piece exists, and the exact path data travels from iOS tap to database row.</p>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <div class="section-title">🎯 Architecture Overview</div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;font-size:14px;line-height:1.8;color:var(--text)">
+    <p>RecipeWizard solves a specific problem: social media cooking videos are <em>rich in information</em> but that information is locked in a non-machine-readable format — video frames + free-text captions. The architecture is a <strong>three-layer extraction pipeline</strong>:</p>
+    <ol style="margin:16px 0 16px 20px;display:flex;flex-direction:column;gap:8px">
+      <li><strong>Video layer</strong> (yt-dlp): reads the video's metadata without downloading any video bytes — title, caption, thumbnail URL.</li>
+      <li><strong>AI layer</strong> (Claude): converts unstructured text + image → structured JSON recipe. Two-stage: cheap classifier first, expensive extractor second.</li>
+      <li><strong>Persistence layer</strong> (Prisma + PostgreSQL): stores recipes per-user so they survive app reinstalls and device changes.</li>
+    </ol>
+    <p>The iOS app is a thin client — it provides the UI, handles OAuth sign-in, and renders what the backend returns. The Share Extension is a separate iOS process that writes to a shared UserDefaults queue; the main app drains it on foreground.</p>
+  </div>
+</section>
+
+<!-- COMPONENT MAP -->
+<section id="components">
+  <div class="section-title">🗂️ Component Map</div>
+  <div class="comp-grid">
+    <div class="comp-card" style="border-left-color:var(--blue)">
+      <div class="comp-name"><span class="fb fb-index">index.ts</span></div>
+      <div class="comp-row"><span class="comp-label" style="color:var(--blue)">Owns</span>Express app, middleware, port binding</div>
+      <div class="comp-row"><span class="comp-label">Imports</span>cors, express-rate-limit, all route modules</div>
+      <div class="comp-row"><span class="comp-label">Exports</span>app (for tests)</div>
+      <div class="comp-row"><span class="comp-label">Called by</span>Node.js runtime at process start</div>
+    </div>
+    <div class="comp-card" style="border-left-color:var(--green)">
+      <div class="comp-name"><span class="fb fb-recipes">routes/recipes.ts</span></div>
+      <div class="comp-row"><span class="comp-label" style="color:var(--green)">Owns</span>POST /api/v1/extract — the main pipeline</div>
+      <div class="comp-row"><span class="comp-label">Imports</span>videoExtractor, claudeService, imageService, imageGenerationService, recipeService, urlValidator, requireAuth</div>
+      <div class="comp-row"><span class="comp-label">Called by</span>index.ts (mounts at /api/v1)</div>
+    </div>
+    <div class="comp-card" style="border-left-color:var(--purple)">
+      <div class="comp-name"><span class="fb fb-auth">routes/auth.ts</span></div>
+      <div class="comp-row"><span class="comp-label" style="color:var(--purple)">Owns</span>POST /api/v1/auth/google — token exchange</div>
+      <div class="comp-row"><span class="comp-label">Imports</span>userService (verifyGoogleToken, findOrCreateUser, signJwt)</div>
+      <div class="comp-row"><span class="comp-label">Called by</span>iOS AuthService on Google Sign-In</div>
+    </div>
+    <div class="comp-card" style="border-left-color:var(--cyan)">
+      <div class="comp-name"><span class="fb" style="background:var(--cyan-dim);color:var(--cyan)">routes/userRecipes.ts</span></div>
+      <div class="comp-row"><span class="comp-label" style="color:var(--cyan)">Owns</span>GET + DELETE /api/v1/recipes</div>
+      <div class="comp-row"><span class="comp-label">Imports</span>requireAuth, recipeService</div>
+      <div class="comp-row"><span class="comp-label">Called by</span>iOS on foreground, on explicit delete</div>
+    </div>
+    <div class="comp-card" style="border-left-color:var(--orange)">
+      <div class="comp-name"><span class="fb fb-video">services/videoExtractor.ts</span></div>
+      <div class="comp-row"><span class="comp-label" style="color:var(--orange)">Owns</span>yt-dlp subprocess management</div>
+      <div class="comp-row"><span class="comp-label">Imports</span>yt-dlp-wrap, path, fs, os</div>
+      <div class="comp-row"><span class="comp-label">Returns</span>VideoMetadata</div>
+      <div class="comp-row"><span class="comp-label">Called by</span>routes/recipes.ts Step 1</div>
+    </div>
+    <div class="comp-card" style="border-left-color:var(--red)">
+      <div class="comp-name"><span class="fb fb-image">services/imageService.ts</span></div>
+      <div class="comp-row"><span class="comp-label" style="color:var(--red)">Owns</span>Thumbnail download + resize</div>
+      <div class="comp-row"><span class="comp-label">Imports</span>axios, sharp</div>
+      <div class="comp-row"><span class="comp-label">Returns</span>base64 JPEG string | null</div>
+      <div class="comp-row"><span class="comp-label">Called by</span>routes/recipes.ts Step 2</div>
+    </div>
+    <div class="comp-card" style="border-left-color:var(--ai)">
+      <div class="comp-name"><span class="fb fb-claude">services/claudeService.ts</span></div>
+      <div class="comp-row"><span class="comp-label" style="color:var(--ai)">Owns</span>Both Claude API calls (Haiku + Sonnet)</div>
+      <div class="comp-row"><span class="comp-label">Imports</span>@anthropic-ai/sdk, promptBuilder</div>
+      <div class="comp-row"><span class="comp-label">Returns</span>Partial RecipeResponse (no URLs)</div>
+      <div class="comp-row"><span class="comp-label">Called by</span>routes/recipes.ts Step 3</div>
+    </div>
+    <div class="comp-card" style="border-left-color:var(--cyan)">
+      <div class="comp-name"><span class="fb fb-imggen">services/imageGenerationService.ts</span></div>
+      <div class="comp-row"><span class="comp-label" style="color:var(--cyan)">Owns</span>Gemini image generation</div>
+      <div class="comp-row"><span class="comp-label">Imports</span>@google/genai</div>
+      <div class="comp-row"><span class="comp-label">Returns</span>base64 PNG string | null</div>
+      <div class="comp-row"><span class="comp-label">Called by</span>routes/recipes.ts Step 4</div>
+    </div>
+    <div class="comp-card" style="border-left-color:var(--green)">
+      <div class="comp-name"><span class="fb fb-recipe-svc">services/recipeService.ts</span></div>
+      <div class="comp-row"><span class="comp-label" style="color:var(--green)">Owns</span>Recipe CRUD (Prisma)</div>
+      <div class="comp-row"><span class="comp-label">Imports</span>prisma client</div>
+      <div class="comp-row"><span class="comp-label">Called by</span>routes/recipes.ts (save), routes/userRecipes.ts (read/delete)</div>
+    </div>
+    <div class="comp-card" style="border-left-color:var(--blue)">
+      <div class="comp-name"><span class="fb fb-user-svc">services/userService.ts</span></div>
+      <div class="comp-row"><span class="comp-label" style="color:var(--blue)">Owns</span>Google OAuth verification + JWT signing</div>
+      <div class="comp-row"><span class="comp-label">Imports</span>google-auth-library, jsonwebtoken, prisma</div>
+      <div class="comp-row"><span class="comp-label">Called by</span>routes/auth.ts</div>
+    </div>
+  </div>
+</section>
+
+<!-- DATA FLOW -->
+<section>
+  <div class="section-title">🌊 Data Type Flow</div>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:20px">How data is transformed at each pipeline stage:</p>
+
+  <p style="font-size:13px;color:var(--muted);margin-bottom:8px">Authentication flow:</p>
+  <div class="data-flow">
+    <div class="df-box">Google ID Token<div class="df-type">string (JWT)</div></div><div class="df-arrow">→</div>
+    <div class="df-box">verifyIdToken()<div class="df-type">GoogleUserInfo</div></div><div class="df-arrow">→</div>
+    <div class="df-box">upsert()<div class="df-type">Prisma User</div></div><div class="df-arrow">→</div>
+    <div class="df-box">signJwt()<div class="df-type">string (JWT)</div></div><div class="df-arrow">→</div>
+    <div class="df-box">iOS UserDefaults<div class="df-type">stored token</div></div>
+  </div>
+
+  <p style="font-size:13px;color:var(--muted);margin:20px 0 8px">Recipe extraction flow:</p>
+  <div class="data-flow">
+    <div class="df-box">TikTok URL<div class="df-type">string</div></div><div class="df-arrow">→</div>
+    <div class="df-box">yt-dlp JSON<div class="df-type">VideoMetadata</div></div><div class="df-arrow">→</div>
+    <div class="df-box">axios + sharp<div class="df-type">base64 JPEG</div></div><div class="df-arrow">→</div>
+    <div class="df-box">Claude Haiku<div class="df-type">"YES"/"NO"</div></div><div class="df-arrow">→</div>
+    <div class="df-box">Claude Sonnet<div class="df-type">```json block```</div></div><div class="df-arrow">→</div>
+    <div class="df-box">parseClaudeResponse<div class="df-type">RawExtraction</div></div><div class="df-arrow">→</div>
+    <div class="df-box">RecipeResponse<div class="df-type">JSON to iOS</div></div>
+  </div>
+</section>
+
+<!-- COMPLETE CALL GRAPH -->
+<section id="callgraph">
+  <div class="section-title">🔬 Execution Call Graph — POST /extract</div>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:24px">Every function call in the full extraction pipeline, with arguments and return values:</p>
+
+  <div class="call-graph">
+
+    <div class="call-card" style="border-left-color:var(--blue)">
+      <div class="call-card-header"><span class="fb fb-index">index.ts</span><span class="call-fn">Express middleware chain</span></div>
+      <div class="call-desc">cors() → json({limit:"10mb"}) → request logger → rateLimit(60/min) → router dispatch</div>
+      <span class="call-return">→ calls next route handler</span>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="arrow-label">passes req, res, next</div>
+
+    <div class="call-card" style="border-left-color:var(--yellow)">
+      <div class="call-card-header"><span class="fb fb-authmw">middleware/auth.ts</span><span class="call-fn">requireAuth(req, res, next)</span></div>
+      <div class="call-desc">Reads <code>Authorization: Bearer &lt;token&gt;</code> header</div>
+      <span class="call-arg">jwt.verify(token: string, JWT_SECRET: string)</span>
+      <span class="call-return">→ sets req.user = {userId: "clxxx", email: "user@example.com"} → next()</span>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="arrow-label">req.user attached, calls next()</div>
+
+    <div class="call-card" style="border-left-color:var(--orange)">
+      <div class="call-card-header"><span class="fb fb-url">utils/urlValidator.ts</span><span class="call-fn">extractUrlFromText() + isSupportedUrl()</span></div>
+      <div class="call-desc">If body.url doesn't start with "http": extract URL from share text. Then validate against TikTok/Instagram patterns.</div>
+      <span class="call-arg">url: "https://vm.tiktok.com/ABC123xyz"</span>
+      <span class="call-return">→ validated url: string</span>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="arrow-label">passes validated url: string</div>
+
+    <div class="call-card" style="border-left-color:var(--orange)">
+      <div class="call-card-header"><span class="fb fb-video">services/videoExtractor.ts</span><span class="call-fn">extractVideoMetadata(url)</span></div>
+      <div class="call-desc">Spawns yt-dlp subprocess with --dump-json --no-playlist. Parses stdout as JSON. Detects platform from extractor_key. Picks thumbnail ≤ 1280px.</div>
+      <span class="call-arg">buildArgs("https://vm.tiktok.com/ABC") → ["--dump-json","--no-playlist","--no-warnings","https://..."]</span>
+      <span class="call-return">→ VideoMetadata {title:"Garlic Butter Pasta", description:"...", thumbnail_url:"https://cdn...", uploader:"@chef", duration:62, platform:"tiktok", webpage_url:"..."}</span>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="arrow-label">passes VideoMetadata + thumbnail_url</div>
+
+    <div class="call-card" style="border-left-color:var(--red)">
+      <div class="call-card-header"><span class="fb fb-image">services/imageService.ts</span><span class="call-fn">downloadAndEncodeImage(thumbnail_url)</span></div>
+      <div class="call-desc">axios.get(url, responseType:"arraybuffer", timeout:10000). Buffer.from(data) → sharp().resize({width:1024}).jpeg({quality:85}).toBuffer()</div>
+      <span class="call-arg">url: "https://cdn.tiktok.com/thumb/..."</span>
+      <span class="call-return">→ "data:image/jpeg;base64,/9j/4AAQ..." (base64 string, ~200 KB)</span>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="arrow-label">passes VideoMetadata + base64 thumbnail</div>
+
+    <div class="call-card" style="border-left-color:var(--ai)" style="border-left-width:4px">
+      <div class="call-card-header"><span class="fb fb-claude">claudeService.ts</span><span class="call-fn">extractRecipeFromVideo(metadata, thumbnailBase64)</span></div>
+      <div class="call-desc"><strong>Stage 1 — Haiku pre-filter:</strong></div>
+      <span class="call-arg">isRecipeVideo(metadata) → messages.create({model:"claude-haiku-4-5", max_tokens:5, ...})</span>
+      <span class="call-return">→ "YES" → proceeds to stage 2</span>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="arrow-label">isRecipeVideo returned true</div>
+
+    <div class="call-card" style="border-left-color:var(--ai)">
+      <div class="call-card-header"><span class="fb fb-prompt">utils/promptBuilder.ts</span><span class="call-fn">buildExtractionPrompt(metadata, thumbnailBase64)</span></div>
+      <div class="call-desc">Assembles: system=SYSTEM_PROMPT, messages=[{role:"user", content:[{type:"text", text:"Platform: tiktok\nTitle: Garlic Butter..."}, {type:"image", source:{type:"base64",...}}, {type:"text", text:"The image above is a thumbnail..."}]}]</div>
+      <span class="call-return">→ {system: string, messages: MessageParam[]}</span>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="arrow-label">passes {system, messages}</div>
+
+    <div class="call-card" style="border-left-color:var(--ai)">
+      <div class="call-card-header"><span class="fb fb-claude">claudeService.ts</span><span class="call-fn">messages.create({model:"claude-sonnet-4-6", max_tokens:4096})</span></div>
+      <div class="call-desc"><strong>Stage 2 — Sonnet full extraction.</strong> Claude analyzes caption + thumbnail image.</div>
+      <span class="call-return">→ response.content[0].text = "```json\n{\n  \"title\": \"Garlic Butter Pasta\",\n  \"cook_time_minutes\": 25,\n  \"ingredients\": [...]\n}\n```"</span>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="arrow-label">passes raw text response</div>
+
+    <div class="call-card" style="border-left-color:var(--ai)">
+      <div class="call-card-header"><span class="fb fb-claude">claudeService.ts</span><span class="call-fn">parseClaudeResponse(text)</span></div>
+      <div class="call-desc">text.match(/```json\s*([\s\S]*?)```/) → JSON.parse(match[1])</div>
+      <span class="call-return">→ RawExtraction {title:"Garlic Butter Pasta", cook_time_minutes:25, ingredients:[{name:"butter",...}], steps:[...], confidence:0.92}</span>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="arrow-label">passes extracted recipe data</div>
+
+    <div class="call-card" style="border-left-color:var(--cyan)">
+      <div class="call-card-header"><span class="fb fb-imggen">imageGenerationService.ts</span><span class="call-fn">generateRecipeImage("Garlic Butter Pasta")</span></div>
+      <div class="call-desc">GoogleGenAI.models.generateContent({model:"gemini-2.5-flash-image", contents:"A beautifully illustrated dish of Garlic Butter Pasta. Studio Ghibli style..."})</div>
+      <span class="call-return">→ "data:image/png;base64,iVBOR..." (Miyazaki-style food illustration)</span>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="arrow-label">passes Miyazaki illustration base64</div>
+
+    <div class="call-card" style="border-left-color:var(--green)">
+      <div class="call-card-header"><span class="fb fb-recipe-svc">services/recipeService.ts</span><span class="call-fn">saveRecipeForUser(userId, responsePayload) — non-blocking</span></div>
+      <div class="call-desc">prisma.recipe.create({data:{...ingredients:{create:[...]}, steps:{create:[...]}}}) — runs in background after response sent</div>
+      <span class="call-return">→ {id: "clxxx..."} — ignored by route handler</span>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="arrow-label">res.json() fires before DB completes</div>
+
+    <div class="call-card" style="border-left-color:var(--green)">
+      <div class="call-card-header"><span class="fb fb-recipes">routes/recipes.ts</span><span class="call-fn">res.json(responsePayload)</span></div>
+      <div class="call-desc">Full RecipeResponse JSON dispatched: title, ingredients[], steps[], thumbnail_base64 (Miyazaki art), source_url, platform, extraction_confidence...</div>
+      <span class="call-return">→ HTTP 200 JSON to iOS client</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- TECHNOLOGY DECISIONS -->
+<section id="tech">
+  <div class="section-title">🔧 Technology Decisions</div>
+  <table class="tech-table">
+    <thead><tr><th>Library / Tool</th><th>What it does</th><th>Why chosen</th><th>What breaks without it</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>yt-dlp</strong></td>
+        <td>CLI tool that extracts video metadata from 1000+ sites including TikTok and Instagram</td>
+        <td>Only tool that reliably handles TikTok and Instagram authentication, short links, and metadata extraction without downloading video. Actively maintained (vs. youtube-dl)</td>
+        <td>No way to get video titles/descriptions/thumbnails for social platforms without scraping HTML</td>
+      </tr>
+      <tr>
+        <td><strong>@anthropic-ai/sdk</strong></td>
+        <td>Official Anthropic SDK for Claude API (messages.create)</td>
+        <td>Claude is the only model family with both excellent multimodal understanding of food images and structured JSON output following complex schemas</td>
+        <td>Recipe extraction — the core feature</td>
+      </tr>
+      <tr>
+        <td><strong>@google/genai</strong></td>
+        <td>Google's Generative AI SDK for Gemini</td>
+        <td>Gemini 2.5 Flash has native image generation (IMAGE response modality). Claude doesn't generate images. DALL-E 3 wasn't chosen because Gemini produces the consistent watercolor/anime aesthetic better.</td>
+        <td>Illustrations fall back to original thumbnail — still functional</td>
+      </tr>
+      <tr>
+        <td><strong>sharp</strong></td>
+        <td>C++ image processing (libvips) — resize, format conversion</td>
+        <td>~100x faster than pure-JS image libs. Handles WebP, HEIC, PNG → JPEG in memory. Critical because image processing happens on every request.</td>
+        <td>Thumbnail too large for Claude's API (Anthropic has a ~5MB image limit)</td>
+      </tr>
+      <tr>
+        <td><strong>Prisma ORM</strong></td>
+        <td>Type-safe ORM with auto-generated TypeScript client from schema.prisma</td>
+        <td>Generates TypeScript types from schema — no type drift between DB and code. Nested writes handle relational data elegantly. Migrations are tracked and versioned.</td>
+        <td>Raw SQL queries with no type safety; manual relation management</td>
+      </tr>
+      <tr>
+        <td><strong>express-rate-limit</strong></td>
+        <td>In-memory request counting per key</td>
+        <td>Simple, no Redis required for single-instance Railway deployment. Per-user keying prevents API abuse.</td>
+        <td>API credits could be exhausted by a single abusive user</td>
+      </tr>
+      <tr>
+        <td><strong>google-auth-library</strong></td>
+        <td>Official Google library for verifying ID tokens</td>
+        <td>Handles public key fetching from Google's JWKS endpoint, token signature verification (RS256), expiry checking. DIY JWT verification would be a security mistake.</td>
+        <td>Authentication — the only auth mechanism</td>
+      </tr>
+      <tr>
+        <td><strong>SwiftData</strong> (iOS)</td>
+        <td>Apple's persistence framework (Core Data successor)</td>
+        <td>Native iOS 17+, integrates directly with SwiftUI (@Query). Automatic CloudKit sync path. Handles offline access.</td>
+        <td>Recipes only visible while online</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- DESIGN PATTERNS -->
+<section id="patterns">
+  <div class="section-title">🎨 Design Patterns Used</div>
+  <div class="pattern-grid">
+    <div class="pattern-card">
+      <div class="pattern-name">Classifier Gating</div>
+      <div class="pattern-desc">A cheap binary classifier (Haiku, 5 tokens) gates an expensive generator (Sonnet, 4096 tokens). Applied to skip non-recipe videos. Reduces AI cost by ~50% given typical share behavior.</div>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-name">Pipeline Pattern</div>
+      <div class="pattern-desc">4 sequential stages in <code>routes/recipes.ts</code>, each with independent error handling and HTTP status codes. Failure in any stage short-circuits the pipeline.</div>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-name">Module Augmentation (TypeScript)</div>
+      <div class="pattern-desc"><code>declare global { namespace Express { interface Request { user? } } }</code> — extends a third-party type without forking the library. Enables <code>req.user</code> type safety across all route files.</div>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-name">Upsert (Idempotent Write)</div>
+      <div class="pattern-desc">Prisma's <code>upsert</code> for user creation — atomically "find or create". Handles concurrent sign-ins from multiple devices without race conditions.</div>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-name">Fire-and-Forget</div>
+      <div class="pattern-desc">DB save called without <code>await</code>, with only a <code>.catch()</code> for logging. Decouples response latency from DB write latency — the user gets their recipe instantly.</div>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-name">Actor Concurrency (Swift)</div>
+      <div class="pattern-desc">iOS <code>RecipeAPIService</code> is declared as <code>actor</code> — guarantees serial access to internal state. All <code>URLSession</code> calls are isolated, preventing data races in the Share Extension's concurrent environment.</div>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-name">UserDefaults Queue (iOS IPC)</div>
+      <div class="pattern-desc">Share Extension cannot access SwiftData (memory limit, separate process). Writes <code>[RecipeResponse]</code> JSON to <code>UserDefaults(suiteName: appGroupID)</code>. Main app drains this queue on foreground — a simple IPC via shared storage.</div>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-name">Cascade Delete (Prisma)</div>
+      <div class="pattern-desc">Prisma schema: <code>onDelete: Cascade</code> on Ingredient and Step relations. Deleting a Recipe automatically deletes all its ingredients and steps atomically. No manual cleanup needed.</div>
+    </div>
+  </div>
+</section>
+
+<!-- LIMITATIONS -->
+<section id="limits">
+  <div class="section-title">⚠️ Known Limitations</div>
+  <div class="limit-list">
+    <div class="limit-item">
+      <div class="limit-title">Rate limiting is in-memory only</div>
+      <div class="limit-desc">express-rate-limit stores counters in memory. On Railway, if the process restarts or scales to multiple instances, counters reset. For true rate limiting at scale, Redis-backed storage (express-rate-limit's <code>redisStore</code> option) would be needed.</div>
+    </div>
+    <div class="limit-item">
+      <div class="limit-title">Instagram requires manual cookie refresh</div>
+      <div class="limit-desc">Instagram blocks yt-dlp requests without authenticated cookies. Cookies expire approximately every 30 days and must be manually re-exported from a logged-in browser session. The health endpoint tracks cookie age and warns when they're > 30 days old.</div>
+    </div>
+    <div class="limit-item">
+      <div class="limit-title">No retry logic for yt-dlp or Claude</div>
+      <div class="limit-desc">If yt-dlp returns a transient error (network blip, rate limit from TikTok), the request fails immediately. No exponential backoff or retry. For production, wrapping yt-dlp calls in a retry loop with backoff would improve reliability.</div>
+    </div>
+    <div class="limit-item">
+      <div class="limit-title">Thumbnail base64 stored in PostgreSQL</div>
+      <div class="limit-desc">The Miyazaki illustration (up to ~1–2 MB base64) is stored in a PostgreSQL <code>text</code> column. For high volume, a blob storage service (S3/Vercel Blob) would be more appropriate. PostgreSQL handles it fine at small scale.</div>
+    </div>
+    <div class="limit-item">
+      <div class="limit-title">CloudKit sync disabled</div>
+      <div class="limit-desc">SwiftData CloudKit sync is commented out — requires a paid Apple Developer account and CloudKit entitlements. Recipes are stored locally in SwiftData but not synced across devices. The backend API fills this gap (fetchUserRecipes syncs on foreground).</div>
+    </div>
+    <div class="limit-item">
+      <div class="limit-title">Simulator testing not possible for Share Extension</div>
+      <div class="limit-desc">App Groups and Share Extensions don't work correctly in the iOS Simulator — requires a physical device with a valid provisioning profile. Also limits automated testing of the extension.</div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:13px">
+  <a href="index.html">← Study Kit Hub</a> &nbsp;·&nbsp; RecipeWizard Architecture
+</footer>
+</body>
+</html>

@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>סדר ריצה | RecipeWizard Study Kit</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117; --surface: #161b22; --surface2: #1c2128; --border: #30363d;
+  --text: #e6edf3; --muted: #8b949e;
+  --green: #3fb950; --green-dim: #1a3a20;
+  --blue: #58a6ff; --blue-dim: #0d2a4a;
+  --orange: #d29922; --orange-dim: #3a2a00;
+  --purple: #bc8cff; --purple-dim: #2d1f4a;
+  --red: #f85149; --red-dim: #3a1010;
+  --yellow: #e3b341; --yellow-dim: #3a2e00;
+  --cyan: #39c5cf; --cyan-dim: #0d3038;
+  --pink: #f778ba; --pink-dim: #3a1030;
+  --teal: #2dd4bf; --teal-dim: #0d2e28;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Heebo', sans-serif; font-size: 15px; line-height: 1.7; }
+
+/* ── Sticky Nav ── */
+.nav { position: sticky; top: 0; z-index: 100; background: rgba(13,17,23,.92); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; gap: 16px; height: 52px; }
+.nav a { color: var(--muted); text-decoration: none; font-size: 13px; white-space: nowrap; }
+.nav a:hover { color: var(--text); }
+.nav .back { color: var(--blue); font-weight: 700; }
+.nav-sep { color: var(--border); }
+.nav-title { color: var(--text); font-weight: 700; font-size: 14px; }
+.nav-links { display: flex; gap: 12px; margin-right: auto; }
+
+/* ── Hero ── */
+.hero { padding: 52px 48px 40px; border-bottom: 1px solid var(--border); }
+.hero-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+  letter-spacing: .8px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.hero h1 { font-size: 34px; font-weight: 900; color: var(--text); margin-bottom: 10px; }
+.hero-sub { color: var(--muted); font-size: 16px; max-width: 680px; line-height: 1.6; }
+.request-pill { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+.method { background: var(--green-dim); color: var(--green); font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.endpoint { color: var(--text); }
+
+/* ── Timeline Overview ── */
+.timeline-overview { padding: 32px 48px; border-bottom: 1px solid var(--border); }
+.timeline-overview h2 { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--text); }
+.tl-steps { display: flex; flex-wrap: wrap; gap: 0; direction: ltr; }
+.tl-step { display: flex; align-items: center; }
+.tl-box { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 14px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; min-width: 110px; text-align: center; cursor: pointer; text-decoration: none; }
+.tl-box:hover { border-color: var(--muted); }
+.tl-num { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+.tl-name { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.tl-file { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; margin-top: 2px; }
+.tl-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; }
+
+/* ── File Badge Colors ── */
+.fb { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  font-weight: 700; padding: 1px 7px; border-radius: 4px; }
+.fb-blue   { background: var(--blue-dim);   color: var(--blue);   border: 1px solid var(--blue); }
+.fb-red    { background: var(--red-dim);    color: var(--red);    border: 1px solid var(--red); }
+.fb-orange { background: var(--orange-dim); color: var(--orange); border: 1px solid var(--orange); }
+.fb-purple { background: var(--purple-dim); color: var(--purple); border: 1px solid var(--purple); }
+.fb-cyan   { background: var(--cyan-dim);   color: var(--cyan);   border: 1px solid var(--cyan); }
+.fb-green  { background: var(--green-dim);  color: var(--green);  border: 1px solid var(--green); }
+.fb-yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid var(--yellow); }
+.fb-pink   { background: var(--pink-dim);   color: var(--pink);   border: 1px solid var(--pink); }
+.fb-teal   { background: var(--teal-dim);   color: var(--teal);   border: 1px solid var(--teal); }
+
+/* ── Phase Section ── */
+.phase { margin: 0; border-bottom: 1px solid var(--border); }
+.phase-header { display: flex; align-items: flex-start; gap: 16px; padding: 28px 48px 16px; }
+.phase-num { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700;
+  color: var(--muted); opacity: .4; line-height: 1; min-width: 36px; }
+.phase-info { flex: 1; }
+.phase-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.phase-desc { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+.phase-files { display: flex; gap: 6px; flex-wrap: wrap; direction: ltr; }
+
+/* ── Code Table ── */
+.code-wrap { padding: 0 48px 28px; }
+.code-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.code-table col.ln-col  { width: 42px; }
+.code-table col.code-col { width: 58%; }
+.code-table col.note-col { width: 40%; }
+
+.code-table thead th { text-align: right; font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .7px; color: var(--muted); border-bottom: 1px solid var(--border);
+  padding: 6px 8px; font-family: 'JetBrains Mono', monospace; }
+.code-table thead th.th-code { text-align: left; }
+
+.code-table td { padding: 1px 8px; vertical-align: top; border-bottom: 1px solid rgba(48,54,61,.35); }
+.code-table tr:last-child td { border-bottom: none; }
+.code-table tr:hover td { background: rgba(255,255,255,.02); }
+
+/* Line number */
+td.ln { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  color: var(--muted); opacity: .5; user-select: none; white-space: nowrap; width: 42px; padding-top: 2px; }
+
+/* Code cell */
+td.code { direction: ltr; text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 12.5px;
+  white-space: pre; overflow-x: auto; line-height: 1.8; }
+
+/* Note cell */
+td.note { direction: rtl; text-align: right; font-family: 'Heebo', sans-serif; font-size: 12px;
+  color: var(--muted); padding-right: 12px; vertical-align: top; }
+
+/* Call note: the side-note on function call lines */
+.call-note { background: var(--surface2); border-right: 3px solid; border-radius: 5px;
+  padding: 5px 10px; margin: 2px 0; line-height: 1.5; }
+.call-note .cn-file { margin-bottom: 3px; }
+.call-note .cn-desc { color: var(--text); font-size: 12px; }
+.call-note .cn-ret { color: var(--muted); font-size: 11px; margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+.call-note.cn-blue   { border-color: var(--blue); }
+.call-note.cn-red    { border-color: var(--red); }
+.call-note.cn-orange { border-color: var(--orange); }
+.call-note.cn-purple { border-color: var(--purple); }
+.call-note.cn-cyan   { border-color: var(--cyan); }
+.call-note.cn-green  { border-color: var(--green); }
+.call-note.cn-yellow { border-color: var(--yellow); }
+.call-note.cn-pink   { border-color: var(--pink); }
+.call-note.cn-teal   { border-color: var(--teal); }
+
+/* simple note - plain annotation, no call note */
+.plain-note { color: var(--muted); font-size: 12px; padding-top: 3px; }
+
+/* ── Syntax Colors ── */
+.kw  { color: #ff7b72; }
+.fn  { color: #d2a8ff; }
+.str { color: #a5d6ff; }
+.num { color: #79c0ff; }
+.cm  { color: #484f58; font-style: italic; }
+.bi  { color: #ffa657; }
+.op  { color: #ff7b72; }
+.va  { color: #e6edf3; }
+.kw2 { color: #79c0ff; }
+
+/* ── Flow Arrow between phases ── */
+.flow-arrow { text-align: center; padding: 8px 0; direction: ltr; }
+.flow-arrow .fa-inner { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; }
+.flow-arrow .fa-line { width: 2px; height: 28px; background: var(--border); }
+.flow-arrow .fa-tip { color: var(--muted); font-size: 16px; margin-top: -6px; }
+.flow-arrow .fa-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; }
+
+/* ── Explain Box ── */
+.explain-box { margin: 0 48px 20px; padding: 14px 18px; border-radius: 8px; border-left: 4px solid; font-size: 13px; line-height: 1.7; direction: rtl; }
+.explain-box.eb-cyan   { background: var(--cyan-dim);   border-color: var(--cyan);   color: var(--text); }
+.explain-box.eb-orange { background: var(--orange-dim); border-color: var(--orange); color: var(--text); }
+.explain-box.eb-green  { background: var(--green-dim);  border-color: var(--green);  color: var(--text); }
+.explain-box.eb-yellow { background: var(--yellow-dim); border-color: var(--yellow); color: var(--text); }
+.explain-box.eb-purple { background: var(--purple-dim); border-color: var(--purple); color: var(--text); }
+.explain-box .eb-label { font-size: 10px; font-weight: 700; letter-spacing: .7px;
+  text-transform: uppercase; color: inherit; opacity: .7; margin-bottom: 6px; font-family: 'JetBrains Mono', monospace; }
+
+/* ── Phase separator label ── */
+.phase-sub { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+  margin: 0 48px 16px; padding: 6px 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--muted); direction: ltr; display: flex; align-items: center; gap: 8px; }
+.phase-sub::before { content: '›'; color: var(--muted); }
+
+/* ── Stack Depth Indicator ── */
+.stack-depth { display: flex; align-items: center; gap: 8px; padding: 4px 48px 8px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); direction: ltr; }
+.stack-depth .sd-crumb { display: inline-flex; align-items: center; gap: 4px; }
+.stack-depth .sd-sep { opacity: .4; }
+
+@media (max-width: 768px) {
+  .hero { padding: 32px 20px 28px; }
+  .phase-header { padding: 20px 20px 12px; }
+  .code-wrap { padding: 0 20px 20px; }
+  .explain-box { margin: 0 20px 16px; }
+  .phase-sub { margin: 0 20px 12px; }
+  .stack-depth { padding: 4px 20px 8px; }
+  .hero h1 { font-size: 24px; }
+  .tl-steps { overflow-x: auto; flex-wrap: nowrap; }
+  .timeline-overview { padding: 24px 20px; }
+  .code-table col.code-col { width: 50%; }
+  .code-table col.note-col { width: 44%; }
+  td.code { font-size: 11px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <a href="index.html" class="back">← חזרה לדף הבית</a>
+  <span class="nav-sep">|</span>
+  <span class="nav-title">סדר ריצה — POST /api/v1/extract</span>
+  <div class="nav-links">
+    <a href="#phase-1">1. HTTP</a>
+    <a href="#phase-2">2. Auth</a>
+    <a href="#phase-3">3. URL</a>
+    <a href="#phase-4">4. yt-dlp</a>
+    <a href="#phase-5">5. Thumbnail</a>
+    <a href="#phase-6">6. Claude</a>
+    <a href="#phase-7">7. Gemini</a>
+    <a href="#phase-8">8. Response</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-label">Study Kit — RecipeWizard</div>
+  <h1>סדר ריצה</h1>
+  <p class="hero-sub">כל שורת קוד שמתבצעת כאשר מגיעה בקשה אחת — בסדר שה-CPU מריץ אותה, לא לפי קובץ. לכל קריאה לפונקציה מוצג מאיפה היא הגיעה ומה היא עושה.</p>
+  <div class="request-pill" dir="ltr">
+    <span class="method">POST</span>
+    <span class="endpoint">http://localhost:8000/api/v1/extract</span>
+    <span style="color:var(--muted)">{ "url": "https://www.tiktok.com/@..." }</span>
+  </div>
+</div>
+
+<!-- Timeline Overview -->
+<div class="timeline-overview">
+  <h2>מפת המסלול</h2>
+  <div class="tl-steps">
+    <a href="#phase-1" class="tl-box">
+      <span class="tl-num">01</span>
+      <span class="tl-name">HTTP Middleware</span>
+      <span class="tl-file fb-blue">index.ts</span>
+    </a>
+    <span class="tl-arrow">→</span>
+    <a href="#phase-2" class="tl-box">
+      <span class="tl-num">02</span>
+      <span class="tl-name">Auth Guard</span>
+      <span class="tl-file fb-red">auth.ts</span>
+    </a>
+    <span class="tl-arrow">→</span>
+    <a href="#phase-3" class="tl-box">
+      <span class="tl-num">03</span>
+      <span class="tl-name">URL Validation</span>
+      <span class="tl-file fb-orange">urlValidator.ts</span>
+    </a>
+    <span class="tl-arrow">→</span>
+    <a href="#phase-4" class="tl-box">
+      <span class="tl-num">04</span>
+      <span class="tl-name">yt-dlp</span>
+      <span class="tl-file fb-purple">videoExtractor.ts</span>
+    </a>
+    <span class="tl-arrow">→</span>
+    <a href="#phase-5" class="tl-box">
+      <span class="tl-num">05</span>
+      <span class="tl-name">Thumbnail</span>
+      <span class="tl-file fb-cyan">imageService.ts</span>
+    </a>
+    <span class="tl-arrow">→</span>
+    <a href="#phase-6" class="tl-box">
+      <span class="tl-num">06</span>
+      <span class="tl-name">Claude AI</span>
+      <span class="tl-file fb-green">claudeService.ts</span>
+    </a>
+    <span class="tl-arrow">→</span>
+    <a href="#phase-7" class="tl-box">
+      <span class="tl-num">07</span>
+      <span class="tl-name">Gemini Image</span>
+      <span class="tl-file fb-pink">imageGen.ts</span>
+    </a>
+    <span class="tl-arrow">→</span>
+    <a href="#phase-8" class="tl-box">
+      <span class="tl-num">08</span>
+      <span class="tl-name">Response + DB</span>
+      <span class="tl-file fb-teal">recipeService.ts</span>
+    </a>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     PHASE 1 — HTTP MIDDLEWARE (index.ts)
+════════════════════════════════════════════════════════════ -->
+<div class="phase" id="phase-1">
+  <div class="phase-header">
+    <span class="phase-num">01</span>
+    <div class="phase-info">
+      <div class="phase-title">HTTP Middleware Chain</div>
+      <div class="phase-desc">הבקשה מגיעה ל-Express. שלושה middlewares רצים לפני שהקוד שלנו בכלל רואה אותה.</div>
+      <div class="phase-files"><span class="fb fb-blue">index.ts</span></div>
+    </div>
+  </div>
+
+  <div class="stack-depth" dir="ltr">
+    <span class="sd-crumb">Express</span>
+    <span class="sd-sep">›</span>
+    <span class="sd-crumb">middleware pipeline</span>
+  </div>
+
+  <div class="code-wrap">
+    <table class="code-table">
+      <colgroup><col class="ln-col"/><col class="code-col"/><col class="note-col"/></colgroup>
+      <thead><tr><th>שורה</th><th class="th-code">קוד</th><th>הסבר / מקור</th></tr></thead>
+      <tbody>
+        <tr><td class="ln">14</td><td class="code"><span class="va">app</span>.<span class="fn">use</span>(<span class="fn">cors</span>());</td>
+          <td class="note"><span class="plain-note">מאפשר בקשות מ-Origins שונים (האפליקציה iOS היא origin אחר מהשרת)</span></td></tr>
+        <tr><td class="ln">15</td><td class="code"><span class="va">app</span>.<span class="fn">use</span>(<span class="va">express</span>.<span class="fn">json</span>({ limit: <span class="str">"10mb"</span> }));</td>
+          <td class="note"><div class="call-note cn-blue"><div class="cn-file"><span class="fb fb-blue">express (built-in)</span></div><div class="cn-desc">מפרסר את ה-JSON body של הבקשה לתוך <code>req.body</code>. limit של 10MB כי יכול להגיע עם base64 image בבקשות עתידיות.</div></div></td></tr>
+        <tr><td class="ln">18</td><td class="code"><span class="va">app</span>.<span class="fn">use</span>((<span class="va">req</span>, <span class="va">_res</span>, <span class="va">next</span>) => {</td>
+          <td class="note"><span class="plain-note">middleware של logging — רץ על כל בקשה</span></td></tr>
+        <tr><td class="ln">19</td><td class="code">  <span class="va">console</span>.<span class="fn">log</span>(<span class="str">`[<span class="bi">${new Date().toISOString()}</span>] <span class="bi">${req.method}</span> <span class="bi">${req.path}</span>`</span>);</td>
+          <td class="note"><span class="plain-note">מדפיס: <code>[2026-04-25T10:30:00Z] POST /api/v1/extract</code></span></td></tr>
+        <tr><td class="ln">20</td><td class="code">  <span class="fn">next</span>();</td>
+          <td class="note"><span class="plain-note">מעביר לmiddleware הבא בשרשרת</span></td></tr>
+        <tr><td class="ln">24</td><td class="code"><span class="va">app</span>.<span class="fn">use</span>(<span class="str">"/api/v1"</span>, <span class="fn">rateLimit</span>({</td>
+          <td class="note"><div class="call-note cn-blue"><div class="cn-file"><span class="fb fb-blue">express-rate-limit</span></div><div class="cn-desc">בודק כמה בקשות הגיעו מהמשתמש הזה ב-60 שניות האחרונות. אם מעל 60 — מחזיר 429 Too Many Requests.</div></div></td></tr>
+        <tr><td class="ln">26</td><td class="code">  windowMs: <span class="num">60</span> * <span class="num">1000</span>,</td>
+          <td class="note"><span class="plain-note">חלון זמן: דקה אחת</span></td></tr>
+        <tr><td class="ln">27</td><td class="code">  max: <span class="num">60</span>,</td>
+          <td class="note"><span class="plain-note">מקסימום 60 בקשות לחלון</span></td></tr>
+        <tr><td class="ln">29</td><td class="code">  keyGenerator: (<span class="va">req</span>) => <span class="va">req</span>.<span class="va">user</span>?.<span class="va">userId</span> ?? <span class="fn">ipKeyGenerator</span>(<span class="va">req</span>.<span class="va">ip</span> ?? <span class="str">"anonymous"</span>),</td>
+          <td class="note"><span class="plain-note">מזהה לפי userId אם מחובר, אחרת לפי IP — מונע עקיפה של rate limit על ידי החלפת token</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="flow-arrow" dir="ltr">
+  <div class="fa-inner">
+    <div class="fa-line"></div>
+    <div class="fa-label">הבקשה עוברת לrouter → requireAuth middleware</div>
+    <div class="fa-tip">↓</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     PHASE 2 — AUTH GUARD (middleware/auth.ts)
+════════════════════════════════════════════════════════════ -->
+<div class="phase" id="phase-2">
+  <div class="phase-header">
+    <span class="phase-num">02</span>
+    <div class="phase-info">
+      <div class="phase-title">Auth Guard — requireAuth</div>
+      <div class="phase-desc">לפני שהhandler רץ, Express קורא ל-requireAuth שמאמת את ה-JWT. אם הtoken לא תקין — הבקשה מסתיימת כאן ב-401.</div>
+      <div class="phase-files"><span class="fb fb-red">middleware/auth.ts</span></div>
+    </div>
+  </div>
+
+  <div class="stack-depth" dir="ltr">
+    <span class="sd-crumb">Express</span>
+    <span class="sd-sep">›</span>
+    <span class="sd-crumb">router.post("/extract", <strong>requireAuth</strong>, handler)</span>
+  </div>
+
+  <div class="code-wrap">
+    <table class="code-table">
+      <colgroup><col class="ln-col"/><col class="code-col"/><col class="note-col"/></colgroup>
+      <thead><tr><th>שורה</th><th class="th-code">קוד</th><th>הסבר / מקור</th></tr></thead>
+      <tbody>
+        <tr><td class="ln">17</td><td class="code"><span class="kw">export function</span> <span class="fn">requireAuth</span>(<span class="va">req</span>, <span class="va">res</span>, <span class="va">next</span>): <span class="bi">void</span> {</td>
+          <td class="note"><span class="plain-note">middleware פונקציה — Express מעביר req, res, next אוטומטית</span></td></tr>
+        <tr><td class="ln">18</td><td class="code">  <span class="kw">const</span> <span class="va">header</span> = <span class="va">req</span>.<span class="va">headers</span>.<span class="va">authorization</span>;</td>
+          <td class="note"><span class="plain-note">קורא את הheader <code>Authorization: Bearer eyJ...</code></span></td></tr>
+        <tr><td class="ln">19</td><td class="code">  <span class="kw">if</span> (!<span class="va">header</span>?.<span class="fn">startsWith</span>(<span class="str">"Bearer "</span>)) {</td>
+          <td class="note"><span class="plain-note">בודק שהheader קיים וההתחלה שלו "Bearer ". <code>?.</code> מגן מ-undefined.</span></td></tr>
+        <tr><td class="ln">20</td><td class="code">    <span class="va">res</span>.<span class="fn">status</span>(<span class="num">401</span>).<span class="fn">json</span>({ error: <span class="str">"..."</span> }); <span class="kw">return</span>;</td>
+          <td class="note"><span class="plain-note">⛔ עוצרים כאן — ה-handler לא ירוץ בכלל</span></td></tr>
+        <tr><td class="ln">23</td><td class="code">  <span class="kw">const</span> <span class="va">token</span> = <span class="va">header</span>.<span class="fn">slice</span>(<span class="num">7</span>);</td>
+          <td class="note"><span class="plain-note">מסיר "Bearer " (7 תווים) כדי להישאר רק עם הJWT: <code>eyJ...</code></span></td></tr>
+        <tr><td class="ln">25</td><td class="code">    <span class="kw">const</span> <span class="va">payload</span> = <span class="va">jwt</span>.<span class="fn">verify</span>(<span class="va">token</span>, <span class="va">process</span>.<span class="va">env</span>.<span class="va">JWT_SECRET</span>!) <span class="kw2">as</span> <span class="bi">AuthPayload</span>;</td>
+          <td class="note"><div class="call-note cn-red"><div class="cn-file"><span class="fb fb-red">jsonwebtoken (npm)</span></div><div class="cn-desc">מאמת חתימת ה-JWT עם הsecret, בודק שלא פג תוקף (exp). אם משהו לא תקין — זורק exception שנתפס ב-catch בשורה 28.</div><div class="cn-ret">→ מחזיר: <code>{ userId: string, email: string }</code></div></div></td></tr>
+        <tr><td class="ln">26</td><td class="code">    <span class="va">req</span>.<span class="va">user</span> = <span class="va">payload</span>;</td>
+          <td class="note"><span class="plain-note">מוסיף את נתוני המשתמש ל-request object — ה-handler יכול לגשת דרך <code>req.user.userId</code></span></td></tr>
+        <tr><td class="ln">27</td><td class="code">    <span class="fn">next</span>();</td>
+          <td class="note"><span class="plain-note">✅ auth עברה — מעביר לhandler הבא (הפונקציה האנונימית ב-routes/recipes.ts)</span></td></tr>
+        <tr><td class="ln">28</td><td class="code">  } <span class="kw">catch</span> {</td>
+          <td class="note"><span class="plain-note">jwt.verify זרק — token לא תקין או פג תוקף</span></td></tr>
+        <tr><td class="ln">29</td><td class="code">    <span class="va">res</span>.<span class="fn">status</span>(<span class="num">401</span>).<span class="fn">json</span>({ error: <span class="str">"Invalid or expired token"</span> });</td>
+          <td class="note"><span class="plain-note">⛔ מחזיר 401 — הבקשה מסתיימת</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="flow-arrow" dir="ltr">
+  <div class="fa-inner">
+    <div class="fa-line"></div>
+    <div class="fa-label">next() נקרא → handler מתחיל לרוץ</div>
+    <div class="fa-tip">↓</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     PHASE 3 — URL VALIDATION (routes/recipes.ts + urlValidator.ts)
+════════════════════════════════════════════════════════════ -->
+<div class="phase" id="phase-3">
+  <div class="phase-header">
+    <span class="phase-num">03</span>
+    <div class="phase-info">
+      <div class="phase-title">URL Parsing &amp; Validation</div>
+      <div class="phase-desc">ה-handler קורא את הbody, מטפל ב-TikTok share text שמכיל URL בתוך טקסט חופשי, ובודק שהURL שייך לTikTok/Instagram.</div>
+      <div class="phase-files">
+        <span class="fb fb-blue">routes/recipes.ts</span>
+        <span class="fb fb-orange">utils/urlValidator.ts</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="stack-depth" dir="ltr">
+    <span class="sd-crumb">Express</span>
+    <span class="sd-sep">›</span>
+    <span class="sd-crumb">router.post("/extract", requireAuth, <strong>async handler</strong>)</span>
+  </div>
+
+  <div class="code-wrap">
+    <table class="code-table">
+      <colgroup><col class="ln-col"/><col class="code-col"/><col class="note-col"/></colgroup>
+      <thead><tr><th>שורה</th><th class="th-code">קוד</th><th>הסבר / מקור</th></tr></thead>
+      <tbody>
+        <tr><td class="ln">14</td><td class="code">  <span class="kw">const</span> <span class="va">body</span> = <span class="va">req</span>.<span class="va">body</span> <span class="kw2">as</span> <span class="bi">ExtractRequest</span>;</td>
+          <td class="note"><span class="plain-note">Type cast — TypeScript יודע עכשיו ש-body.url קיים</span></td></tr>
+        <tr><td class="ln">15</td><td class="code">  <span class="kw">let</span> <span class="va">url</span> = <span class="va">body</span>.<span class="va">url</span>?.<span class="fn">trim</span>();</td>
+          <td class="note"><span class="plain-note">מסיר רווחים מהתחלה/סוף. <code>?.</code> מגן מ-undefined.</span></td></tr>
+        <tr><td class="ln">17</td><td class="code">  <span class="kw">if</span> (!<span class="va">url</span>) {</td>
+          <td class="note"><span class="plain-note">גם undefined וגם string ריק הם falsy — מכסים שניהם</span></td></tr>
+        <tr><td class="ln">18</td><td class="code">    <span class="va">res</span>.<span class="fn">status</span>(<span class="num">400</span>).<span class="fn">json</span>({ error: <span class="str">"url is required"</span> }); <span class="kw">return</span>;</td>
+          <td class="note"><span class="plain-note">⛔ 400 Bad Request — body ריק</span></td></tr>
+        <tr><td class="ln">23</td><td class="code">  <span class="kw">if</span> (!<span class="va">url</span>.<span class="fn">startsWith</span>(<span class="str">"http"</span>)) {</td>
+          <td class="note"><span class="plain-note">TikTok share text נראה כך: "בשל לי את הסרטון הזה 🍳 https://vm.tiktok.com/ABC" — לא מתחיל ב-http</span></td></tr>
+        <tr><td class="ln">24</td><td class="code">    <span class="kw">const</span> <span class="va">extracted</span> = <span class="fn">extractUrlFromText</span>(<span class="va">url</span>);</td>
+          <td class="note"><div class="call-note cn-orange"><div class="cn-file"><span class="fb fb-orange">utils/urlValidator.ts : 25</span></div><div class="cn-desc">מחפש תבנית <code>/https?:\/\/[^\s]+/</code> בתוך הטקסט. מחלץ את הURL הראשון שמוצא.</div><div class="cn-ret">→ מחזיר: <code>string | null</code></div></div></td></tr>
+        <tr><td class="ln">25</td><td class="code">    <span class="kw">if</span> (!<span class="va">extracted</span>) {</td>
+          <td class="note"><span class="plain-note">לא נמצא URL בטקסט</span></td></tr>
+        <tr><td class="ln">26</td><td class="code">      <span class="va">res</span>.<span class="fn">status</span>(<span class="num">422</span>).<span class="fn">json</span>({ error: <span class="str">"Could not find a URL..."</span> }); <span class="kw">return</span>;</td>
+          <td class="note"><span class="plain-note">⛔ 422 Unprocessable — הטקסט לא מכיל URL בכלל</span></td></tr>
+        <tr><td class="ln">29</td><td class="code">    <span class="va">url</span> = <span class="va">extracted</span>;</td>
+          <td class="note"><span class="plain-note">מעכשיו url הוא URL נקי כמו https://vm.tiktok.com/ABC</span></td></tr>
+        <tr><td class="ln">32</td><td class="code">  <span class="kw">if</span> (!<span class="fn">isSupportedUrl</span>(<span class="va">url</span>)) {</td>
+          <td class="note"><div class="call-note cn-orange"><div class="cn-file"><span class="fb fb-orange">utils/urlValidator.ts : 11</span></div><div class="cn-desc">מריץ 4 regex patterns (3 TikTok + 1 Instagram). אם אף pattern לא מתאים — מחזיר false.</div><div class="cn-ret">→ מחזיר: <code>boolean</code></div></div></td></tr>
+        <tr><td class="ln">33</td><td class="code">    <span class="va">res</span>.<span class="fn">status</span>(<span class="num">422</span>).<span class="fn">json</span>({ error: <span class="str">"URL must be from TikTok or Instagram"</span>, ... });</td>
+          <td class="note"><span class="plain-note">⛔ 422 — YouTube, Twitter וכו' לא נתמכים</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="flow-arrow" dir="ltr">
+  <div class="fa-inner">
+    <div class="fa-line"></div>
+    <div class="fa-label">URL תקין → await extractVideoMetadata(url)</div>
+    <div class="fa-tip">↓</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     PHASE 4 — YT-DLP VIDEO EXTRACTION
+════════════════════════════════════════════════════════════ -->
+<div class="phase" id="phase-4">
+  <div class="phase-header">
+    <span class="phase-num">04</span>
+    <div class="phase-info">
+      <div class="phase-title">Video Metadata — yt-dlp Subprocess</div>
+      <div class="phase-desc">מפעיל תהליך ילד של yt-dlp, מחכה שיחזיר JSON עם מטא-דאטה של הוידאו (כותרת, caption, thumbnail URL), מפרסר ומחזיר אובייקט VideoMetadata.</div>
+      <div class="phase-files"><span class="fb fb-purple">services/videoExtractor.ts</span></div>
+    </div>
+  </div>
+
+  <div class="stack-depth" dir="ltr">
+    <span class="sd-crumb">routes/recipes.ts : 48</span>
+    <span class="sd-sep">›</span>
+    <span class="sd-crumb"><strong>extractVideoMetadata(url)</strong></span>
+  </div>
+
+  <div class="phase-sub">buildArgs(url) — פונקציה פנימית שרצה קודם</div>
+
+  <div class="code-wrap">
+    <table class="code-table">
+      <colgroup><col class="ln-col"/><col class="code-col"/><col class="note-col"/></colgroup>
+      <thead><tr><th>שורה</th><th class="th-code">קוד</th><th>הסבר / מקור</th></tr></thead>
+      <tbody>
+        <tr><td class="ln">23</td><td class="code"><span class="kw">function</span> <span class="fn">buildArgs</span>(<span class="va">url</span>: <span class="bi">string</span>): <span class="bi">string</span>[] {</td>
+          <td class="note"><span class="plain-note">פנימית ל-videoExtractor. בונה מערך הflag-ים לyt-dlp.</span></td></tr>
+        <tr><td class="ln">24</td><td class="code">  <span class="kw">const</span> <span class="va">args</span> = [<span class="str">"--dump-json"</span>, <span class="str">"--no-playlist"</span>, <span class="str">"--no-warnings"</span>, <span class="va">url</span>];</td>
+          <td class="note"><span class="plain-note"><code>--dump-json</code>: פולט JSON בלי להוריד וידאו. <code>--no-playlist</code>: לא מוריד playlist שלם.</span></td></tr>
+        <tr><td class="ln">26</td><td class="code">  <span class="kw">if</span> (<span class="va">resolvedCookiesPath</span>) {</td>
+          <td class="note"><span class="plain-note">אם יש קובץ cookies (לInstagram) — מוסיף אותו לתחילת הargs</span></td></tr>
+        <tr><td class="ln">27</td><td class="code">    <span class="va">args</span>.<span class="fn">unshift</span>(<span class="str">"--cookies"</span>, <span class="va">resolvedCookiesPath</span>);</td>
+          <td class="note"><span class="plain-note"><code>unshift</code> מוסיף לתחילת המערך (לא לסוף). yt-dlp דורש <code>--cookies path</code> לפני ה-URL.</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="phase-sub">extractVideoMetadata(url) — הפונקציה הראשית</div>
+
+  <div class="code-wrap">
+    <table class="code-table">
+      <colgroup><col class="ln-col"/><col class="code-col"/><col class="note-col"/></colgroup>
+      <thead><tr><th>שורה</th><th class="th-code">קוד</th><th>הסבר / מקור</th></tr></thead>
+      <tbody>
+        <tr><td class="ln">33</td><td class="code"><span class="kw">export async function</span> <span class="fn">extractVideoMetadata</span>(<span class="va">url</span>: <span class="bi">string</span>): <span class="bi">Promise</span>&lt;<span class="bi">VideoMetadata</span>&gt; {</td>
+          <td class="note"><span class="plain-note">הכניסה לפאזה הזו. נקראת מ-routes/recipes.ts שורה 48.</span></td></tr>
+        <tr><td class="ln">34</td><td class="code">  <span class="kw">const</span> <span class="va">args</span> = <span class="fn">buildArgs</span>(<span class="va">url</span>);</td>
+          <td class="note"><div class="call-note cn-purple"><div class="cn-file"><span class="fb fb-purple">videoExtractor.ts : 23</span></div><div class="cn-desc">בונה את מערך הarguments לyt-dlp. למשל: <code>["--dump-json", "--no-playlist", "--no-warnings", "https://..."]</code></div><div class="cn-ret">→ מחזיר: <code>string[]</code></div></div></td></tr>
+        <tr><td class="ln">38</td><td class="code">    <span class="va">rawJson</span> = <span class="kw">await</span> <span class="va">ytDlp</span>.<span class="fn">execPromise</span>(<span class="va">args</span>);</td>
+          <td class="note"><div class="call-note cn-purple"><div class="cn-file"><span class="fb fb-purple">yt-dlp-wrap (npm)</span></div><div class="cn-desc">מפעיל תהליך ילד של yt-dlp הCLI. חוסם עד שהתהליך מסיים (עשרות שניות). פולט stdout כ-string — JSON ענקי של 100+ שדות.</div><div class="cn-ret">→ מחזיר: <code>string</code> (JSON raw)</div></div></td></tr>
+        <tr><td class="ln">46</td><td class="code">    <span class="va">info</span> = <span class="bi">JSON</span>.<span class="fn">parse</span>(<span class="va">rawJson</span>);</td>
+          <td class="note"><div class="call-note cn-purple"><div class="cn-file"><span class="fb fb-purple">JSON (built-in)</span></div><div class="cn-desc">מפרסר את ה-JSON הגולמי לאובייקט. אם yt-dlp פלט משהו לא תקין — exception נתפס וזורק Error עם הודעה.</div><div class="cn-ret">→ מחזיר: <code>Record&lt;string, unknown&gt;</code></div></div></td></tr>
+        <tr><td class="ln">51</td><td class="code">  <span class="kw">const</span> <span class="va">extractorKey</span> = <span class="bi">String</span>(<span class="va">info</span>[<span class="str">"extractor_key"</span>] ?? <span class="str">""</span>).<span class="fn">toLowerCase</span>();</td>
+          <td class="note"><span class="plain-note">extractor_key מ-yt-dlp הוא "TikTok" או "Instagram" — מנרמל ל-lowercase</span></td></tr>
+        <tr><td class="ln">52</td><td class="code">  <span class="kw">const</span> <span class="va">platform</span> = <span class="va">extractorKey</span>.<span class="fn">includes</span>(<span class="str">"tiktok"</span>)</td>
+          <td class="note"><span class="plain-note">קובע "tiktok" | "instagram" | "unknown" — יישמר בתגובה הסופית</span></td></tr>
+        <tr><td class="ln">60</td><td class="code">  <span class="kw">const</span> <span class="va">thumbnails</span> = <span class="va">info</span>[<span class="str">"thumbnails"</span>] <span class="kw2">as</span> <span class="bi">Array</span>&lt;...&gt;;</td>
+          <td class="note"><span class="plain-note">yt-dlp מחזיר מערך thumbnails במגוון רזולוציות</span></td></tr>
+        <tr><td class="ln">62</td><td class="code">    <span class="kw">const</span> <span class="va">mid</span> = <span class="va">thumbnails</span>.<span class="fn">find</span>(<span class="va">t</span> => <span class="va">t</span>.<span class="va">width</span> &amp;&amp; <span class="va">t</span>.<span class="va">width</span> &lt;= <span class="num">1280</span>) ?? <span class="va">thumbnails</span>[<span class="va">thumbnails</span>.<span class="va">length</span> - <span class="num">1</span>];</td>
+          <td class="note"><span class="plain-note">מעדיף thumbnail עד 1280px. אם לא קיים — לוקח את האחרון במערך (בדרך כלל הכי גדול).</span></td></tr>
+        <tr><td class="ln">68</td><td class="code">  <span class="kw">return</span> {</td>
+          <td class="note"><span class="plain-note">מחזיר VideoMetadata נקי למי שקרא — routes/recipes.ts שורה 48</span></td></tr>
+        <tr><td class="ln">69</td><td class="code">    title: <span class="bi">String</span>(<span class="va">info</span>[<span class="str">"title"</span>] ?? <span class="str">""</span>),</td>
+          <td class="note"><span class="plain-note">כותרת הוידאו</span></td></tr>
+        <tr><td class="ln">70</td><td class="code">    description: <span class="bi">String</span>(<span class="va">info</span>[<span class="str">"description"</span>] ?? <span class="str">""</span>),</td>
+          <td class="note"><span class="plain-note">ה-caption — יכול להיות טקסט ארוך עם hashtags ורשימת מרכיבים</span></td></tr>
+        <tr><td class="ln">72</td><td class="code">    uploader: <span class="bi">String</span>(<span class="va">info</span>[<span class="str">"uploader"</span>] ?? <span class="va">info</span>[<span class="str">"channel"</span>] ?? <span class="str">""</span>),</td>
+          <td class="note"><span class="plain-note">שם היוצר — fallback ל-channel כי TikTok ו-Instagram משתמשים בשדות שונים</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="flow-arrow" dir="ltr">
+  <div class="fa-inner">
+    <div class="fa-line"></div>
+    <div class="fa-label">VideoMetadata חוזר → downloadAndEncodeImage</div>
+    <div class="fa-tip">↓</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     PHASE 5 — THUMBNAIL (imageService.ts)
+════════════════════════════════════════════════════════════ -->
+<div class="phase" id="phase-5">
+  <div class="phase-header">
+    <span class="phase-num">05</span>
+    <div class="phase-info">
+      <div class="phase-title">Thumbnail Download &amp; Encode</div>
+      <div class="phase-desc">מוריד את ה-thumbnail של הוידאו, מכווץ ל-1024px עם sharp (ספריית C++), ומחזיר base64 JPEG שיכנס לcall של Claude.</div>
+      <div class="phase-files"><span class="fb fb-cyan">services/imageService.ts</span></div>
+    </div>
+  </div>
+
+  <div class="stack-depth" dir="ltr">
+    <span class="sd-crumb">routes/recipes.ts : 61</span>
+    <span class="sd-sep">›</span>
+    <span class="sd-crumb"><strong>downloadAndEncodeImage(metadata.thumbnail_url)</strong></span>
+  </div>
+
+  <div class="code-wrap">
+    <table class="code-table">
+      <colgroup><col class="ln-col"/><col class="code-col"/><col class="note-col"/></colgroup>
+      <thead><tr><th>שורה</th><th class="th-code">קוד</th><th>הסבר / מקור</th></tr></thead>
+      <tbody>
+        <tr><td class="ln">60</td><td class="code">  <span class="kw">if</span> (<span class="va">body</span>.<span class="va">include_thumbnail</span> !== <span class="kw2">false</span> &amp;&amp; <span class="va">metadata</span>.<span class="va">thumbnail_url</span>) {</td>
+          <td class="note"><span class="plain-note">default הוא להוריד thumbnail. רק אם הclient שלח include_thumbnail: false — מדלגים.</span></td></tr>
+        <tr><td class="ln">61</td><td class="code">    <span class="va">thumbnailBase64</span> = <span class="kw">await</span> <span class="fn">downloadAndEncodeImage</span>(<span class="va">metadata</span>.<span class="va">thumbnail_url</span>);</td>
+          <td class="note"><div class="call-note cn-cyan"><div class="cn-file"><span class="fb fb-cyan">imageService.ts : 6</span></div><div class="cn-desc">מוריד + מכווץ + מקודד את התמונה. מחזיר null אם ההורדה נכשלה (שגיאת רשת) — לא קורס את כל הבקשה.</div><div class="cn-ret">→ מחזיר: <code>string | null</code></div></div></td></tr>
+        <tr><td class="ln">10</td><td class="code">    <span class="kw">const</span> <span class="va">response</span> = <span class="kw">await</span> <span class="va">axios</span>.<span class="fn">get</span>(<span class="va">url</span>, {</td>
+          <td class="note"><div class="call-note cn-cyan"><div class="cn-file"><span class="fb fb-cyan">axios (npm)</span></div><div class="cn-desc">HTTP GET של ה-thumbnail URL. responseType: "arraybuffer" כי מדובר בתמונה (binary data), לא טקסט.</div><div class="cn-ret">→ מחזיר: <code>AxiosResponse</code> עם <code>data: ArrayBuffer</code></div></div></td></tr>
+        <tr><td class="ln">11</td><td class="code">      responseType: <span class="str">"arraybuffer"</span>, timeout: <span class="num">10_000</span>,</td>
+          <td class="note"><span class="plain-note">timeout של 10 שניות — לא ממתינים לנצח לתמונה</span></td></tr>
+        <tr><td class="ln">12</td><td class="code">      headers: { <span class="str">"User-Agent"</span>: <span class="str">"Mozilla/5.0 (compatible; RecipeWizard/1.0)"</span> }</td>
+          <td class="note"><span class="plain-note">TikTok ו-Instagram חוסמים בקשות ללא User-Agent. מחקים דפדפן.</span></td></tr>
+        <tr><td class="ln">16</td><td class="code">    <span class="kw">const</span> <span class="va">buffer</span> = <span class="bi">Buffer</span>.<span class="fn">from</span>(<span class="va">response</span>.<span class="va">data</span>);</td>
+          <td class="note"><span class="plain-note">ממיר ArrayBuffer ל-Node.js Buffer שאפשר לעבוד איתו</span></td></tr>
+        <tr><td class="ln">17</td><td class="code">    <span class="kw">const</span> <span class="va">resized</span> = <span class="kw">await</span> <span class="fn">sharp</span>(<span class="va">buffer</span>)</td>
+          <td class="note"><div class="call-note cn-cyan"><div class="cn-file"><span class="fb fb-cyan">sharp (npm) — C++/libvips</span></div><div class="cn-desc">מעבד תמונה במהירות גבוהה. הresize מכווץ לmax 1024px רוחב תוך שמירת פרופורציות. ללא עיגול — לא מגדיל תמונה קטנה.</div></div></td></tr>
+        <tr><td class="ln">18</td><td class="code">      .<span class="fn">resize</span>({ width: <span class="va">MAX_WIDTH</span>, withoutEnlargement: <span class="kw2">true</span> })</td>
+          <td class="note"><span class="plain-note"><code>withoutEnlargement: true</code> — לא מגדיל תמונה קטנה מ-1024px, לא מוסיף noise</span></td></tr>
+        <tr><td class="ln">19</td><td class="code">      .<span class="fn">jpeg</span>({ quality: <span class="num">85</span> })</td>
+          <td class="note"><span class="plain-note">ממיר ל-JPEG עם איכות 85%. איזון בין quality לגודל קובץ.</span></td></tr>
+        <tr><td class="ln">20</td><td class="code">      .<span class="fn">toBuffer</span>();</td>
+          <td class="note"><span class="plain-note">מחזיר Buffer של ה-JPEG המעובד</span></td></tr>
+        <tr><td class="ln">22</td><td class="code">    <span class="kw">return</span> <span class="str">`data:image/jpeg;base64,<span class="bi">${resized.toString("base64")}</span>`</span>;</td>
+          <td class="note"><span class="plain-note">מקודד ל-base64 ומוסיף data URI prefix — Claude API דורש את הפורמט הזה לתמונות</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="flow-arrow" dir="ltr">
+  <div class="fa-inner">
+    <div class="fa-line"></div>
+    <div class="fa-label">thumbnailBase64 (string | null) → extractRecipeFromVideo</div>
+    <div class="fa-tip">↓</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     PHASE 6 — CLAUDE AI (claudeService.ts + promptBuilder.ts)
+════════════════════════════════════════════════════════════ -->
+<div class="phase" id="phase-6">
+  <div class="phase-header">
+    <span class="phase-num">06</span>
+    <div class="phase-info">
+      <div class="phase-title">Claude AI — Classification + Extraction</div>
+      <div class="phase-desc">שני calls ל-Claude: תחילה Haiku זול לבדוק "האם זו מתכון?" — ואם כן, Sonnet יקר לחלץ את המתכון המלא. הפרדה זו חוסכת ~90% עלות על סרטונים שאינם מתכון.</div>
+      <div class="phase-files">
+        <span class="fb fb-green">services/claudeService.ts</span>
+        <span class="fb fb-yellow">utils/promptBuilder.ts</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="stack-depth" dir="ltr">
+    <span class="sd-crumb">routes/recipes.ts : 67</span>
+    <span class="sd-sep">›</span>
+    <span class="sd-crumb"><strong>extractRecipeFromVideo(metadata, thumbnailBase64)</strong></span>
+  </div>
+
+  <div class="phase-sub">Step 6a — isRecipeVideo(metadata) → Haiku classifier</div>
+
+  <div class="code-wrap">
+    <table class="code-table">
+      <colgroup><col class="ln-col"/><col class="code-col"/><col class="note-col"/></colgroup>
+      <thead><tr><th>שורה</th><th class="th-code">קוד</th><th>הסבר / מקור</th></tr></thead>
+      <tbody>
+        <tr><td class="ln">61</td><td class="code"><span class="kw">export async function</span> <span class="fn">extractRecipeFromVideo</span>(...) {</td>
+          <td class="note"><span class="plain-note">נקראת מ-routes/recipes.ts שורה 67</span></td></tr>
+        <tr><td class="ln">66</td><td class="code">  <span class="kw">const</span> <span class="va">isRecipe</span> = <span class="kw">await</span> <span class="fn">isRecipeVideo</span>(<span class="va">metadata</span>);</td>
+          <td class="note"><div class="call-note cn-green"><div class="cn-file"><span class="fb fb-green">claudeService.ts : 38</span></div><div class="cn-desc">שולח כותרת + creator + 500 תווים ראשונים של caption ל-Haiku עם max_tokens: 5. מצפה ל-YES/NO בלבד.</div><div class="cn-ret">→ מחזיר: <code>boolean</code></div></div></td></tr>
+        <tr><td class="ln">38</td><td class="code"><span class="kw">async function</span> <span class="fn">isRecipeVideo</span>(<span class="va">metadata</span>: <span class="bi">VideoMetadata</span>): <span class="bi">Promise</span>&lt;<span class="bi">boolean</span>&gt; {</td>
+          <td class="note"><span class="plain-note">לא exported — רק claudeService יכול לקרוא לה</span></td></tr>
+        <tr><td class="ln">39</td><td class="code">  <span class="kw">const</span> <span class="va">prompt</span> = <span class="str">`Video title: <span class="bi">${metadata.title}</span>\nCaption: <span class="bi">${metadata.description.slice(0, 500)}</span>...</span>`</td>
+          <td class="note"><span class="plain-note">רק 500 תווים ראשונים — מספיק לסיווג, לא צריך את כל הcaption</span></td></tr>
+        <tr><td class="ln">46</td><td class="code">  <span class="kw">const</span> <span class="va">response</span> = <span class="kw">await</span> <span class="va">client</span>.<span class="va">messages</span>.<span class="fn">create</span>({</td>
+          <td class="note"><div class="call-note cn-green"><div class="cn-file"><span class="fb fb-green">@anthropic-ai/sdk</span></div><div class="cn-desc">Anthropic API call עם claude-haiku-4-5. max_tokens: 5 — Claude יוכל להגיב רק "YES" או "NO". זה מה שחוסך כסף.</div><div class="cn-ret">→ מחזיר: <code>Message</code> object</div></div></td></tr>
+        <tr><td class="ln">47</td><td class="code">    model: <span class="str">"claude-haiku-4-5-20251001"</span>,</td>
+          <td class="note"><span class="plain-note">Haiku — המודל הזול ביותר של Anthropic. מספיק לסיווג YES/NO פשוט.</span></td></tr>
+        <tr><td class="ln">48</td><td class="code">    max_tokens: <span class="num">5</span>,</td>
+          <td class="note"><span class="plain-note">5 tokens ≈ ~3-4 מילים. לא יכול לכתוב הסברים גם אם ירצה.</span></td></tr>
+        <tr><td class="ln">53</td><td class="code">  <span class="kw">const</span> <span class="va">answer</span> = <span class="va">response</span>.<span class="va">content</span>[<span class="num">0</span>].<span class="va">type</span> === <span class="str">"text"</span></td>
+          <td class="note"><span class="plain-note">בודק type לפני גישה ל-.text — TypeScript discriminated union</span></td></tr>
+        <tr><td class="ln">55</td><td class="code">    : <span class="str">"NO"</span>;</td>
+          <td class="note"><span class="plain-note">fallback ל-NO אם Claude החזיר משהו לא צפוי — conservative approach</span></td></tr>
+        <tr><td class="ln">58</td><td class="code">  <span class="kw">return</span> <span class="va">answer</span>.<span class="fn">startsWith</span>(<span class="str">"YES"</span>);</td>
+          <td class="note"><span class="plain-note"><code>startsWith</code> ולא === כי Claude לפעמים מוסיף נקודה: "YES."</span></td></tr>
+        <tr><td class="ln">67</td><td class="code">  <span class="kw">if</span> (!<span class="va">isRecipe</span>) {</td>
+          <td class="note"><span class="plain-note">אם Haiku ענה NO — זורקים exception מיוחד</span></td></tr>
+        <tr><td class="ln">68</td><td class="code">    <span class="kw">throw new</span> <span class="fn">NotARecipeError</span>();</td>
+          <td class="note"><div class="call-note cn-green"><div class="cn-file"><span class="fb fb-green">claudeService.ts : 7</span></div><div class="cn-desc">Error מותאם. ב-routes/recipes.ts נתפס בinstance check: if(err instanceof NotARecipeError) → 422. כך אפשר להבדיל בין "לא מתכון" לבין "Claude נכשל".</div></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="phase-sub">Step 6b — buildExtractionPrompt(metadata, thumbnailBase64)</div>
+
+  <div class="stack-depth" dir="ltr">
+    <span class="sd-crumb">claudeService.ts : 71</span>
+    <span class="sd-sep">›</span>
+    <span class="sd-crumb"><strong>buildExtractionPrompt(metadata, thumbnailBase64)</strong></span>
+  </div>
+
+  <div class="code-wrap">
+    <table class="code-table">
+      <colgroup><col class="ln-col"/><col class="code-col"/><col class="note-col"/></colgroup>
+      <thead><tr><th>שורה</th><th class="th-code">קוד</th><th>הסבר / מקור</th></tr></thead>
+      <tbody>
+        <tr><td class="ln">71</td><td class="code">  <span class="kw">const</span> { <span class="va">system</span>, <span class="va">messages</span> } = <span class="fn">buildExtractionPrompt</span>(<span class="va">metadata</span>, <span class="va">thumbnailBase64</span>);</td>
+          <td class="note"><div class="call-note cn-yellow"><div class="cn-file"><span class="fb fb-yellow">utils/promptBuilder.ts : 45</span></div><div class="cn-desc">בונה את ה-system prompt ואת ה-user message (עם או בלי תמונה). מחזיר אובייקט מוכן לcall של Claude API.</div><div class="cn-ret">→ מחזיר: <code>{ system: string, messages: MessageParam[] }</code></div></div></td></tr>
+        <tr><td class="ln">45</td><td class="code"><span class="kw">export function</span> <span class="fn">buildExtractionPrompt</span>(<span class="va">metadata</span>, <span class="va">thumbnailBase64</span>) {</td>
+          <td class="note"><span class="plain-note">נקראת מ-claudeService.ts שורה 71</span></td></tr>
+        <tr><td class="ln">49</td><td class="code">  <span class="kw">const</span> <span class="va">captionText</span> = <span class="va">metadata</span>.<span class="va">description</span>.<span class="fn">trim</span>().<span class="va">length</span> > <span class="num">0</span></td>
+          <td class="note"><span class="plain-note">אם אין caption — כותב "(no caption available)" במפורש לClaude</span></td></tr>
+        <tr><td class="ln">51</td><td class="code">    ? <span class="va">metadata</span>.<span class="va">description</span>.<span class="fn">slice</span>(<span class="num">0</span>, <span class="num">3000</span>)</td>
+          <td class="note"><span class="plain-note">חותך ל-3000 תווים — Claude Sonnet מגבלת context window לא מאפשרת caption אינסופי</span></td></tr>
+        <tr><td class="ln">69</td><td class="code">  <span class="kw">const</span> <span class="va">userContent</span>: <span class="bi">ContentBlockParam</span>[] = [{ type: <span class="str">"text"</span>, text: <span class="va">textContent</span> }];</td>
+          <td class="note"><span class="plain-note">מתחיל עם block טקסט. אם יש תמונה — יתווסף אחריו.</span></td></tr>
+        <tr><td class="ln">73</td><td class="code">  <span class="kw">if</span> (<span class="va">thumbnailBase64</span>) {</td>
+          <td class="note"><span class="plain-note">thumbnail קיים — מוסיפים image block לcall הmultimodal</span></td></tr>
+        <tr><td class="ln">74</td><td class="code">    <span class="kw">const</span> <span class="va">base64Data</span> = <span class="va">thumbnailBase64</span>.<span class="fn">replace</span>(/^data:image\/\w+;base64,/, <span class="str">""</span>);</td>
+          <td class="note"><span class="plain-note">Claude API לא מקבל את ה-"data:..." prefix — מסיר אותו לפני השליחה</span></td></tr>
+        <tr><td class="ln">75</td><td class="code">    <span class="va">userContent</span>.<span class="fn">push</span>({ type: <span class="str">"image"</span>, source: { type: <span class="str">"base64"</span>, media_type: <span class="str">"image/jpeg"</span>, data: <span class="va">base64Data</span> } });</td>
+          <td class="note"><span class="plain-note">block #2: התמונה. Claude יראה: טקסט → תמונה → טקסט</span></td></tr>
+        <tr><td class="ln">83</td><td class="code">    <span class="va">userContent</span>.<span class="fn">push</span>({ type: <span class="str">"text"</span>, text: <span class="str">"The image above is a thumbnail..."</span> });</td>
+          <td class="note"><span class="plain-note">block #3: הוראה לClaude לקשר בין התמונה לתוכן</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="phase-sub">Step 6c — Sonnet extraction call + parseClaudeResponse</div>
+
+  <div class="stack-depth" dir="ltr">
+    <span class="sd-crumb">claudeService.ts : 73</span>
+    <span class="sd-sep">›</span>
+    <span class="sd-crumb"><strong>client.messages.create({ model: "claude-sonnet-4-6", max_tokens: 4096 })</strong></span>
+  </div>
+
+  <div class="code-wrap">
+    <table class="code-table">
+      <colgroup><col class="ln-col"/><col class="code-col"/><col class="note-col"/></colgroup>
+      <thead><tr><th>שורה</th><th class="th-code">קוד</th><th>הסבר / mקור</th></tr></thead>
+      <tbody>
+        <tr><td class="ln">73</td><td class="code">  <span class="kw">const</span> <span class="va">response</span> = <span class="kw">await</span> <span class="va">client</span>.<span class="va">messages</span>.<span class="fn">create</span>({</td>
+          <td class="note"><div class="call-note cn-green"><div class="cn-file"><span class="fb fb-green">@anthropic-ai/sdk</span></div><div class="cn-desc">Call יקר ל-claude-sonnet-4-6 עם ה-prompt המלא + התמונה. Claude מחזיר JSON שעטוף ב-```json ... ```. max_tokens: 4096 לתגובה ארוכה.</div><div class="cn-ret">→ מחזיר: <code>Message</code> object</div></div></td></tr>
+        <tr><td class="ln">74</td><td class="code">    model: <span class="str">"claude-sonnet-4-6"</span>,</td>
+          <td class="note"><span class="plain-note">Sonnet — המודל היכולת האמצעי. יקר יותר מHaiku אבל הרבה יותר טוב בחילוץ JSON מורכב.</span></td></tr>
+        <tr><td class="ln">75</td><td class="code">    max_tokens: <span class="num">4096</span>,</td>
+          <td class="note"><span class="plain-note">מתכון עם 20 מרכיבים ו-15 שלבים יכול להיות ארוך — צריך מרחב מספיק</span></td></tr>
+        <tr><td class="ln">80</td><td class="code">  <span class="kw">const</span> <span class="va">rawText</span> = <span class="va">response</span>.<span class="va">content</span>[<span class="num">0</span>].<span class="va">type</span> === <span class="str">"text"</span> ? <span class="va">response</span>.<span class="va">content</span>[<span class="num">0</span>].<span class="va">text</span> : <span class="str">""</span>;</td>
+          <td class="note"><span class="plain-note">Claude תמיד מחזיר content array. בודקים type לפני גישה ל-.text.</span></td></tr>
+        <tr><td class="ln">85</td><td class="code">    <span class="va">extracted</span> = <span class="fn">parseClaudeResponse</span>(<span class="va">rawText</span>);</td>
+          <td class="note"><div class="call-note cn-green"><div class="cn-file"><span class="fb fb-green">claudeService.ts : 26</span></div><div class="cn-desc">מחפש בtext של Claude את ```json ... ```. אם לא מוצא — מנסה JSON.parse על הטקסט הגולמי. אם שניהם נכשלים — זורק Error.</div><div class="cn-ret">→ מחזיר: <code>RawExtraction</code> object</div></div></td></tr>
+        <tr><td class="ln">27</td><td class="code">  <span class="kw">const</span> <span class="va">match</span> = <span class="va">text</span>.<span class="fn">match</span>(<span class="str">/```json\s*([\s\S]*?)```/</span>);</td>
+          <td class="note"><span class="plain-note"><code>[\s\S]*?</code> — כל תו כולל newline, ה-? מוסיף lazy matching (עוצר בסגירה הראשונה)</span></td></tr>
+        <tr><td class="ln">35</td><td class="code">  <span class="kw">return</span> <span class="bi">JSON</span>.<span class="fn">parse</span>(<span class="va">match</span>[<span class="num">1</span>]);</td>
+          <td class="note"><span class="plain-note">match[1] הוא capture group הראשון — רק מה שבין ```json ל-```</span></td></tr>
+        <tr><td class="ln">90</td><td class="code">  <span class="kw">const</span> <span class="va">ingredients</span>: <span class="bi">Ingredient</span>[] = (<span class="va">extracted</span>.<span class="va">ingredients</span> ?? []).<span class="fn">map</span>((<span class="va">ing</span>) => ({</td>
+          <td class="note"><span class="plain-note">נרמול: כל שדה חסר → null. Claude לפעמים לא ממלא quantity אם לא נאמר בוידאו.</span></td></tr>
+        <tr><td class="ln">97</td><td class="code">  <span class="kw">const</span> <span class="va">steps</span>: <span class="bi">RecipeStep</span>[] = (<span class="va">extracted</span>.<span class="va">steps</span> ?? []).<span class="fn">map</span>((<span class="va">step</span>, <span class="va">i</span>) => ({</td>
+          <td class="note"><span class="plain-note">i כ-fallback לstep_number — אם Claude שכח למספר, נשתמש ב-index</span></td></tr>
+        <tr><td class="ln">103</td><td class="code">  <span class="kw">const</span> <span class="va">confidence</span> = <span class="kw">typeof</span> <span class="va">extracted</span>.<span class="va">confidence</span> === <span class="str">"number"</span></td>
+          <td class="note"><span class="plain-note">Claude מדווח confidence 0-1. Math.max/min כ-clamp — גם אם שלח 1.5 לא נשבר.</span></td></tr>
+        <tr><td class="ln">104</td><td class="code">    ? <span class="bi">Math</span>.<span class="fn">max</span>(<span class="num">0</span>, <span class="bi">Math</span>.<span class="fn">min</span>(<span class="num">1</span>, <span class="va">extracted</span>.<span class="va">confidence</span>))</td>
+          <td class="note"><span class="plain-note">clamp ל[0,1] — Math.min(1, x) עוצר מלמעלה, Math.max(0, ...) עוצר מלמטה</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="flow-arrow" dir="ltr">
+  <div class="fa-inner">
+    <div class="fa-line"></div>
+    <div class="fa-label">recipeData חוזר → generateRecipeImage(recipeData.title)</div>
+    <div class="fa-tip">↓</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     PHASE 7 — GEMINI IMAGE GENERATION
+════════════════════════════════════════════════════════════ -->
+<div class="phase" id="phase-7">
+  <div class="phase-header">
+    <span class="phase-num">07</span>
+    <div class="phase-info">
+      <div class="phase-title">Gemini Image Generation — סגנון Miyazaki</div>
+      <div class="phase-desc">שולח את שם המתכון ל-Gemini 2.5 Flash Image כדי לייצר איור אנימה בסגנון Studio Ghibli. אם GEMINI_API_KEY לא מוגדר או הgeneration נכשל — מחזיר null ולא קורס.</div>
+      <div class="phase-files"><span class="fb fb-pink">services/imageGenerationService.ts</span></div>
+    </div>
+  </div>
+
+  <div class="stack-depth" dir="ltr">
+    <span class="sd-crumb">routes/recipes.ts : 82</span>
+    <span class="sd-sep">›</span>
+    <span class="sd-crumb"><strong>generateRecipeImage(recipeData.title)</strong></span>
+  </div>
+
+  <div class="code-wrap">
+    <table class="code-table">
+      <colgroup><col class="ln-col"/><col class="code-col"/><col class="note-col"/></colgroup>
+      <thead><tr><th>שורה</th><th class="th-code">קוד</th><th>הסבר / מקור</th></tr></thead>
+      <tbody>
+        <tr><td class="ln">11</td><td class="code"><span class="kw">export async function</span> <span class="fn">generateRecipeImage</span>(<span class="va">recipeTitle</span>: <span class="bi">string</span>): <span class="bi">Promise</span>&lt;<span class="bi">string</span> | <span class="kw2">null</span>&gt; {</td>
+          <td class="note"><span class="plain-note">נקראת מ-routes/recipes.ts שורה 82</span></td></tr>
+        <tr><td class="ln">12</td><td class="code">  <span class="kw">const</span> <span class="va">apiKey</span> = <span class="va">process</span>.<span class="va">env</span>.<span class="va">GEMINI_API_KEY</span>;</td>
+          <td class="note"><span class="plain-note">בודק אם המפתח מוגדר — אם לא, מדלג בשקט</span></td></tr>
+        <tr><td class="ln">13</td><td class="code">  <span class="kw">if</span> (!<span class="va">apiKey</span>) { <span class="va">console</span>.<span class="fn">warn</span>(...); <span class="kw">return</span> <span class="kw2">null</span>; }</td>
+          <td class="note"><span class="plain-note">null → הapp יציג thumbnail רגיל במקום איור. לא crashes.</span></td></tr>
+        <tr><td class="ln">20</td><td class="code">  <span class="kw">const</span> <span class="va">ai</span> = <span class="kw">new</span> <span class="fn">GoogleGenAI</span>({ apiKey });</td>
+          <td class="note"><div class="call-note cn-pink"><div class="cn-file"><span class="fb fb-pink">@google/genai (npm)</span></div><div class="cn-desc">יוצר client של Google Gemini API. נוצר per-request ולא global כי apiKey לא ידוע בwarmup.</div></div></td></tr>
+        <tr><td class="ln">21</td><td class="code">  <span class="kw">const</span> <span class="va">prompt</span> = <span class="str">`A beautifully illustrated dish of "<span class="bi">${recipeTitle}</span>". <span class="bi">${STYLE_SUFFIX}</span>`</span>;</td>
+          <td class="note"><span class="plain-note">STYLE_SUFFIX: "Studio Ghibli / Hayao Miyazaki anime art style. Soft watercolor textures, warm golden light..." — מגדיר את הסגנון הויזואלי</span></td></tr>
+        <tr><td class="ln">24</td><td class="code">    <span class="kw">const</span> <span class="va">response</span> = <span class="kw">await</span> <span class="va">ai</span>.<span class="va">models</span>.<span class="fn">generateContent</span>({</td>
+          <td class="note"><div class="call-note cn-pink"><div class="cn-file"><span class="fb fb-pink">@google/genai — Gemini</span></div><div class="cn-desc">קורא ל-gemini-2.5-flash-image. responseModalities: ["TEXT", "IMAGE"] מאפשר Gemini להחזיר תמונה בתוך התגובה. התמונה מגיעה כbase64 בתוך parts.</div><div class="cn-ret">→ מחזיר: <code>GenerateContentResponse</code></div></div></td></tr>
+        <tr><td class="ln">27</td><td class="code">      config: { responseModalities: [<span class="str">"TEXT"</span>, <span class="str">"IMAGE"</span>] },</td>
+          <td class="note"><span class="plain-note">ללא IMAGE במודalities — Gemini יחזיר רק טקסט. חייבים לציין זאת במפורש.</span></td></tr>
+        <tr><td class="ln">32</td><td class="code">    <span class="kw">for</span> (<span class="kw">const</span> <span class="va">part</span> <span class="kw2">of</span> <span class="va">response</span>.<span class="va">candidates</span>?.[<span class="num">0</span>]?.<span class="va">content</span>?.<span class="va">parts</span> ?? []) {</td>
+          <td class="note"><span class="plain-note">מרצה על כל ה-parts בתגובה — יכולים להיות text parts ו-image parts</span></td></tr>
+        <tr><td class="ln">33</td><td class="code">      <span class="kw">if</span> (<span class="va">part</span>.<span class="va">inlineData</span>?.<span class="va">data</span>) {</td>
+          <td class="note"><span class="plain-note">רק parts עם inlineData הם תמונות. text parts לא יהיה להם inlineData.</span></td></tr>
+        <tr><td class="ln">34</td><td class="code">        <span class="kw">const</span> <span class="va">mime</span> = <span class="va">part</span>.<span class="va">inlineData</span>.<span class="va">mimeType</span> ?? <span class="str">"image/png"</span>;</td>
+          <td class="note"><span class="plain-note">בדרך כלל image/png. mimeType יכול להשתנות בין גרסאות Gemini.</span></td></tr>
+        <tr><td class="ln">35</td><td class="code">        <span class="kw">return</span> <span class="str">`data:<span class="bi">${mime}</span>;base64,<span class="bi">${part.inlineData.data}</span>`</span>;</td>
+          <td class="note"><span class="plain-note">מחזיר data URI — אותו פורמט כמו imageService. routes/recipes.ts יוכל להשתמש ישירות.</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="flow-arrow" dir="ltr">
+  <div class="fa-inner">
+    <div class="fa-line"></div>
+    <div class="fa-label">generatedImage (string | null) → build response + fire-and-forget DB save</div>
+    <div class="fa-tip">↓</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     PHASE 8 — RESPONSE + DB SAVE
+════════════════════════════════════════════════════════════ -->
+<div class="phase" id="phase-8">
+  <div class="phase-header">
+    <span class="phase-num">08</span>
+    <div class="phase-info">
+      <div class="phase-title">Build Response + Fire-and-Forget DB Save</div>
+      <div class="phase-desc">בונה את payload הסופי, שולח תגובה ל-iOS לפני ששמירת ה-DB מסיימת (non-blocking). ה-DB save רץ ב-background — אם נכשל, רק מדפיס שגיאה.</div>
+      <div class="phase-files">
+        <span class="fb fb-blue">routes/recipes.ts</span>
+        <span class="fb fb-teal">services/recipeService.ts</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="stack-depth" dir="ltr">
+    <span class="sd-crumb">routes/recipes.ts</span>
+    <span class="sd-sep">›</span>
+    <span class="sd-crumb">lines 82–98</span>
+  </div>
+
+  <div class="code-wrap">
+    <table class="code-table">
+      <colgroup><col class="ln-col"/><col class="code-col"/><col class="note-col"/></colgroup>
+      <thead><tr><th>שורה</th><th class="th-code">קוד</th><th>הסבר / מקור</th></tr></thead>
+      <tbody>
+        <tr><td class="ln">82</td><td class="code">  <span class="kw">const</span> <span class="va">generatedImage</span> = <span class="kw">await</span> <span class="fn">generateRecipeImage</span>(<span class="va">recipeData</span>.<span class="va">title</span>);</td>
+          <td class="note"><div class="call-note cn-pink"><div class="cn-file"><span class="fb fb-pink">imageGenerationService.ts : 11</span></div><div class="cn-desc">Call לGemini כבר הושלם (Phase 7). זה השורה שמחכה לתוצאה שלו בroutes/recipes.ts.</div><div class="cn-ret">→ מחזיר: <code>string | null</code></div></div></td></tr>
+        <tr><td class="ln">84</td><td class="code">  <span class="kw">const</span> <span class="va">responsePayload</span> = {</td>
+          <td class="note"><span class="plain-note">בונה את האובייקט הסופי שישלח ל-iOS</span></td></tr>
+        <tr><td class="ln">85</td><td class="code">    ...<span class="va">recipeData</span>,</td>
+          <td class="note"><span class="plain-note">spread: title, ingredients, steps, cook_time_minutes וכו'</span></td></tr>
+        <tr><td class="ln">86</td><td class="code">    source_url: <span class="va">url</span>,</td>
+          <td class="note"><span class="plain-note">ה-URL המקורי — יישמר ב-DB וב-iOS לצורך קישור חזרה לוידאו</span></td></tr>
+        <tr><td class="ln">88</td><td class="code">    platform: <span class="va">metadata</span>.<span class="va">platform</span>,</td>
+          <td class="note"><span class="plain-note">"tiktok" | "instagram" — iOS מציג אייקון בהתאם</span></td></tr>
+        <tr><td class="ln">89</td><td class="code">    thumbnail_base64: <span class="va">generatedImage</span> ?? <span class="va">thumbnailBase64</span>,</td>
+          <td class="note"><span class="plain-note"><strong>עדיפות:</strong> איור Gemini > thumbnail רגיל > null. <code>??</code> nullish coalescing — רק null/undefined מפעיל fallback.</span></td></tr>
+        <tr><td class="ln">90</td><td class="code">    raw_caption: <span class="va">metadata</span>.<span class="va">description</span>.<span class="fn">slice</span>(<span class="num">0</span>, <span class="num">1000</span>) || <span class="kw2">null</span>,</td>
+          <td class="note"><span class="plain-note">1000 תווים ראשונים של caption — לaccess בUI בלבד, לא לעיבוד נוסף</span></td></tr>
+        <tr><td class="ln">94</td><td class="code">  <span class="fn">saveRecipeForUser</span>(<span class="va">req</span>.<span class="va">user</span>!.<span class="va">userId</span>, <span class="va">responsePayload</span>).<span class="fn">catch</span>((<span class="va">err</span>) => {</td>
+          <td class="note"><div class="call-note cn-teal"><div class="cn-file"><span class="fb fb-teal">services/recipeService.ts : 4</span></div><div class="cn-desc"><strong>Fire-and-forget:</strong> לא await! הcall לDB מתחיל ברקע. התגובה ל-iOS תשלח בלי לחכות לDB. אם הDB נכשל — .catch מדפיס שגיאה אבל לא משפיע על התגובה.</div></div></td></tr>
+        <tr><td class="ln">95</td><td class="code">    <span class="va">console</span>.<span class="fn">error</span>(<span class="str">"[recipes] Failed to save recipe to DB:"</span>, <span class="va">err</span>);</td>
+          <td class="note"><span class="plain-note">שגיאת DB מודפסת ב-logs אבל המשתמש כבר קיבל תגובה</span></td></tr>
+        <tr><td class="ln">98</td><td class="code">  <span class="va">res</span>.<span class="fn">json</span>(<span class="va">responsePayload</span>);</td>
+          <td class="note"><span class="plain-note">✅ שולח JSON תגובה ל-iOS. הcall מסתיים כאן מנקודת המבט של הclient.</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="phase-sub">saveRecipeForUser — רץ ברקע אחרי שהתגובה נשלחה</div>
+
+  <div class="stack-depth" dir="ltr">
+    <span class="sd-crumb">routes/recipes.ts : 94 (background)</span>
+    <span class="sd-sep">›</span>
+    <span class="sd-crumb"><strong>saveRecipeForUser(userId, responsePayload)</strong></span>
+  </div>
+
+  <div class="code-wrap">
+    <table class="code-table">
+      <colgroup><col class="ln-col"/><col class="code-col"/><col class="note-col"/></colgroup>
+      <thead><tr><th>שורה</th><th class="th-code">קוד</th><th>הסבר / מקור</th></tr></thead>
+      <tbody>
+        <tr><td class="ln">4</td><td class="code"><span class="kw">export async function</span> <span class="fn">saveRecipeForUser</span>(<span class="va">userId</span>: <span class="bi">string</span>, <span class="va">recipe</span>: <span class="bi">RecipeResponse</span>) {</td>
+          <td class="note"><span class="plain-note">נקראת מ-routes/recipes.ts בלי await — async ברקע</span></td></tr>
+        <tr><td class="ln">8</td><td class="code">  <span class="kw">return</span> <span class="va">prisma</span>.<span class="va">recipe</span>.<span class="fn">create</span>({</td>
+          <td class="note"><div class="call-note cn-teal"><div class="cn-file"><span class="fb fb-teal">Prisma ORM → PostgreSQL</span></div><div class="cn-desc">Prisma מתרגם ל-SQL INSERT עם nested creates. יוצר שורה אחת ב-recipes, ואוטומטית מוסיף את כל ה-ingredients וה-steps כ-related records.</div><div class="cn-ret">→ מחזיר: <code>{ id: string }</code></div></div></td></tr>
+        <tr><td class="ln">24</td><td class="code">      ingredients: {</td>
+          <td class="note"><span class="plain-note">nested write — Prisma יוצר את כל ה-Ingredient records בquery אחת</span></td></tr>
+        <tr><td class="ln">25</td><td class="code">        create: <span class="va">recipe</span>.<span class="va">ingredients</span>.<span class="fn">map</span>((<span class="va">ing</span>, <span class="va">i</span>) => ({</td>
+          <td class="note"><span class="plain-note">i הוא sortOrder — מבטיח שהמרכיבים יחזרו בסדר הנכון מה-DB</span></td></tr>
+        <tr><td class="ln">31</td><td class="code">      steps: {</td>
+          <td class="note"><span class="plain-note">אותו דפוס — nested create לsteps</span></td></tr>
+        <tr><td class="ln">38</td><td class="code">    select: { id: <span class="kw2">true</span> },</td>
+          <td class="note"><span class="plain-note">מבקש רק את ה-id בחזרה — לא צריך את כל השורה, חוסך network round trip ל-DB</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="explain-box eb-green">
+  <div class="eb-label">סיכום — מה שחזר ל-iOS</div>
+  הresponse payload שנשלח ל-iOS מכיל: <strong>title, ingredients[], steps[], cook_time_minutes, servings, difficulty, tags, extraction_confidence</strong> מ-Claude; <strong>source_url, platform, thumbnail_url</strong> מ-yt-dlp; <strong>thumbnail_base64</strong> — איור Gemini אם הצליח, thumbnail מקורי אחרת; <strong>raw_caption</strong> — 1000 תווים ראשונים של הcaption המקורי.
+</div>
+
+<div class="explain-box eb-orange">
+  <div class="eb-label">Fire-and-Forget — למה בלי await?</div>
+  אם היינו כותבים <code>await saveRecipeForUser(...)</code> — iOS היה מחכה לDB לפני שמקבל תגובה. ה-DB save יכול לקחת 100-300ms נוספים. מנקודת המבט של המשתמש: מתכון כבר חולץ, מה שמחכה להם זה זמן להצגה, לא זמן DB. אם ה-DB נכשל — המתכון עדיין הגיע לאפליקציה; כישלון הsave מודפס ב-logs לניטור.
+</div>
+
+<div class="explain-box eb-cyan">
+  <div class="eb-label">סדר העדיפויות של thumbnail_base64</div>
+  <code>generatedImage ?? thumbnailBase64</code> — ה-<code>??</code> (nullish coalescing) בוחר את הראשון שאינו null/undefined. כלומר: אם Gemini ייצר תמונה → תשלח לiOS. אם Gemini נכשל (null) → תשלח thumbnail מקורי. אם גם thumbnail לא הצליח (null) → null ב-payload. iOS מטפל ב-null image בגרייסור.
+</div>
+
+<div class="explain-box eb-purple">
+  <div class="eb-label">סיכום הקריאות החוצות לפי סדר</div>
+  <ol style="padding-right: 18px; margin-top: 8px; line-height: 2;">
+    <li><strong>jwt.verify()</strong> — <span style="color:var(--muted)">auth.ts → jsonwebtoken npm</span></li>
+    <li><strong>ytDlp.execPromise()</strong> — <span style="color:var(--muted)">videoExtractor.ts → yt-dlp-wrap → subprocess</span></li>
+    <li><strong>axios.get()</strong> — <span style="color:var(--muted)">imageService.ts → HTTP request לthumbnail URL</span></li>
+    <li><strong>sharp().resize().jpeg().toBuffer()</strong> — <span style="color:var(--muted)">imageService.ts → C++ libvips</span></li>
+    <li><strong>client.messages.create() #1</strong> — <span style="color:var(--muted)">claudeService.ts → Anthropic API (Haiku)</span></li>
+    <li><strong>client.messages.create() #2</strong> — <span style="color:var(--muted)">claudeService.ts → Anthropic API (Sonnet)</span></li>
+    <li><strong>ai.models.generateContent()</strong> — <span style="color:var(--muted)">imageGenerationService.ts → Google Gemini API</span></li>
+    <li><strong>prisma.recipe.create()</strong> — <span style="color:var(--muted)">recipeService.ts → PostgreSQL (background)</span></li>
+  </ol>
+</div>
+
+<!-- bottom padding -->
+<div style="height: 80px;"></div>
+
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deep Dive: Claude Service — RecipeWizard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--green:#3fb950;--green-dim:#1a3a20;--blue:#58a6ff;--blue-dim:#0d2a4a;--orange:#d29922;--orange-dim:#3a2a00;--purple:#bc8cff;--purple-dim:#2d1f4a;--red:#f85149;--red-dim:#3a1010;--yellow:#e3b341;--yellow-dim:#3a2e00;--cyan:#39c5cf;--cyan-dim:#0d3038;--ai:#e879f9;--ai-dim:#3a1050}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Heebo',sans-serif;line-height:1.6}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+nav{position:sticky;top:0;background:rgba(13,17,23,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);z-index:100;padding:0 24px;height:52px;display:flex;align-items:center;gap:24px}
+.logo{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:14px}
+.nav-links{display:flex;gap:16px;margin-left:auto;flex-wrap:wrap}
+.nav-links a{font-size:12px;color:var(--muted)}
+.nav-links a:hover{color:var(--text);text-decoration:none}
+.container{max-width:1050px;margin:0 auto;padding:32px 24px}
+h1{font-size:28px;font-weight:900;margin-bottom:8px}
+code{font-family:'JetBrains Mono',monospace;font-size:.88em;background:var(--surface2);padding:1px 5px;border-radius:4px}
+section{margin:48px 0}
+.section-title{font-size:22px;font-weight:700;margin-bottom:24px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.fb{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:1px 7px;border-radius:4px;margin-right:4px;vertical-align:middle}
+.fb-claude{background:var(--ai-dim);color:var(--ai)}
+.fb-prompt{background:var(--ai-dim);color:var(--ai)}
+/* Code table */
+.code-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:24px}
+.code-table td{vertical-align:top;border-bottom:1px solid rgba(48,54,61,.5)}
+.code-table tr:hover td{background:rgba(28,33,40,.7)}
+.ln{width:40px;text-align:right;padding:3px 10px 3px 0;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;user-select:none;border-right:1px solid var(--border)}
+.code{padding:3px 14px;font-family:'JetBrains Mono',monospace;white-space:pre;color:var(--text)}
+.ann{padding:3px 14px 3px 16px;font-size:12px;color:var(--text);border-left:3px solid transparent;line-height:1.55;min-width:220px}
+.ann.important{border-left-color:var(--yellow)}
+.ann.key{border-left-color:var(--cyan)}
+.ann.warn{border-left-color:var(--orange)}
+.ann.good{border-left-color:var(--green)}
+/* Syntax */
+.kw{color:#ff7b72}.fn{color:#d2a8ff}.str{color:#a5d6ff}.num{color:#79c0ff}.cm{color:#484f58;font-style:italic}.bi{color:#ffa657}.op{color:#ff7b72}.va{color:#e6edf3}.kw2{color:#79c0ff}
+/* Func summary */
+.func-summary{margin:0 0 16px;padding:14px 18px;background:var(--surface2);border:1px solid var(--border);border-left:4px solid var(--ai);border-radius:8px;font-size:14px;color:var(--text);line-height:1.7}
+.func-summary .fs-label{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-family:'JetBrains Mono',monospace}
+.func-summary strong{color:var(--cyan)}
+/* Func divider */
+.func-divider{display:flex;align-items:center;gap:12px;margin:32px 0 12px;padding:10px 0}
+.func-divider::before,.func-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.func-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;white-space:nowrap;padding:4px 12px;border-radius:6px;background:var(--ai-dim);color:var(--ai)}
+/* Explain boxes */
+.explain-box{border-radius:8px;padding:14px 18px;margin:0 0 24px;font-size:13px;line-height:1.7;border:1px solid}
+.explain-box .eb-title{font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;margin-bottom:8px;font-family:'JetBrains Mono',monospace}
+.eb-orange{background:var(--orange-dim);border-color:var(--orange);color:#e6d0a0}.eb-orange .eb-title{color:var(--orange)}
+.eb-cyan{background:var(--cyan-dim);border-color:var(--cyan);color:#b0e8ec}.eb-cyan .eb-title{color:var(--cyan)}
+.eb-purple{background:var(--purple-dim);border-color:var(--purple);color:#d8c4f8}.eb-purple .eb-title{color:var(--purple)}
+.eb-green{background:var(--green-dim);border-color:var(--green);color:#b0d8b8}.eb-green .eb-title{color:var(--green)}
+.eb-yellow{background:var(--yellow-dim);border-color:var(--yellow);color:#e8d490}.eb-yellow .eb-title{color:var(--yellow)}
+.eb-ai{background:var(--ai-dim);border-color:var(--ai);color:#f0c0f8}.eb-ai .eb-title{color:var(--ai)}
+/* Stage comparison */
+.stage-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.stage-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px}
+.stage-title{font-weight:700;font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.stage-row{font-size:13px;color:var(--muted);padding:4px 0;border-bottom:1px solid var(--border);display:flex;gap:8px}
+.stage-row:last-child{border-bottom:none}
+.stage-key{font-family:'JetBrains Mono',monospace;font-size:11px;width:90px;flex-shrink:0;color:var(--text)}
+/* Input/output example */
+.example-box{background:#010409;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:16px 0}
+.example-bar{background:var(--surface2);border-bottom:1px solid var(--border);padding:8px 16px;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--muted)}
+.example-body{padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;white-space:pre;overflow-x:auto}
+.ex-key{color:var(--blue)}.ex-str{color:var(--ai)}.ex-num{color:#79c0ff}.ex-null{color:var(--muted)}.ex-bool{color:#ff7b72}
+@media(max-width:768px){.stage-grid{grid-template-columns:1fr}.ann{display:none}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">← RecipeWizard Study Kit</a>
+  <div class="nav-links">
+    <a href="#overview">Overview</a>
+    <a href="#stage1">Stage 1: Haiku</a>
+    <a href="#stage2">Stage 2: Sonnet</a>
+    <a href="#parsing">Response Parsing</a>
+    <a href="#normalization">Normalization</a>
+    <a href="#errors">Error Handling</a>
+    <a href="#examples">Examples</a>
+  </div>
+</nav>
+
+<div class="container">
+<h1>Deep Dive: <span class="fb fb-claude" style="font-size:16px;padding:3px 12px">claudeService.ts</span></h1>
+<p style="color:var(--muted);font-size:15px;margin-bottom:40px">The AI heart of RecipeWizard. Two Claude calls, one error class, one parser, and careful type normalization. Every decision explained.</p>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <div class="section-title">🎯 What This Module Does</div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--ai);border-radius:10px;padding:20px 24px;font-size:14px;line-height:1.8">
+    <p><code>claudeService.ts</code> is responsible for one thing: <strong>given video metadata + an optional thumbnail, return a structured recipe</strong> — or throw if the video isn't a recipe.</p>
+    <p style="margin-top:12px">It does this in two stages:</p>
+    <ol style="margin:12px 0 0 20px;display:flex;flex-direction:column;gap:6px">
+      <li><strong>Stage 1 (guard)</strong> — ask Haiku "is this a recipe?" with a 5-token budget. If NO, throw <code>NotARecipeError</code> and skip Stage 2 entirely.</li>
+      <li><strong>Stage 2 (extraction)</strong> — ask Sonnet to extract the full structured recipe from the caption + thumbnail. Parse, validate, normalize, and return.</li>
+    </ol>
+    <p style="margin-top:12px">The module exports three things: <code>NotARecipeError</code>, <code>parseClaudeResponse</code> (also used in tests), and <code>extractRecipeFromVideo</code>.</p>
+  </div>
+</section>
+
+<!-- STAGE COMPARISON -->
+<div class="stage-grid" style="margin:32px 0">
+  <div class="stage-card">
+    <div class="stage-title" style="color:var(--blue)">⚡ Stage 1 — Haiku Pre-filter</div>
+    <div class="stage-row"><span class="stage-key">Model</span>claude-haiku-4-5-20251001</div>
+    <div class="stage-row"><span class="stage-key">max_tokens</span>5</div>
+    <div class="stage-row"><span class="stage-key">Input</span>Title + first 500 chars of caption</div>
+    <div class="stage-row"><span class="stage-key">Output</span>"YES" or "NO"</div>
+    <div class="stage-row"><span class="stage-key">Cost</span>~$0.00003 per call</div>
+    <div class="stage-row"><span class="stage-key">Purpose</span>Reject non-recipe videos cheaply</div>
+    <div class="stage-row"><span class="stage-key">On NO</span>Throws NotARecipeError → 422</div>
+  </div>
+  <div class="stage-card">
+    <div class="stage-title" style="color:var(--ai)">🧠 Stage 2 — Sonnet Extraction</div>
+    <div class="stage-row"><span class="stage-key">Model</span>claude-sonnet-4-6</div>
+    <div class="stage-row"><span class="stage-key">max_tokens</span>4096</div>
+    <div class="stage-row"><span class="stage-key">Input</span>Full caption + thumbnail image</div>
+    <div class="stage-row"><span class="stage-key">Output</span>```json { title, ingredients, steps... }```</div>
+    <div class="stage-row"><span class="stage-key">Cost</span>~$0.003–0.015 per call</div>
+    <div class="stage-row"><span class="stage-key">Purpose</span>Full structured recipe extraction</div>
+    <div class="stage-row"><span class="stage-key">On error</span>Throws Error → 500</div>
+  </div>
+</div>
+
+<!-- STAGE 1 -->
+<section id="stage1">
+  <div class="section-title">⚡ Stage 1: <code>isRecipeVideo()</code></div>
+
+  <div class="func-summary">
+    <div class="fs-label">What this function does</div>
+    A lightweight binary classifier. Sends the video title, creator name, and first 500 characters of the caption to claude-haiku — the cheapest Claude model — and asks a single YES/NO question. If the answer is NO, the entire extraction pipeline is aborted and the route returns a 422 error to the iOS app. This is the cost-control gatekeeper.
+  </div>
+
+  <table class="code-table">
+    <tr><td class="ln">38</td><td class="code"><span class="kw">async function</span> <span class="fn">isRecipeVideo</span>(<span class="va">metadata</span>: <span class="bi">VideoMetadata</span>): <span class="bi">Promise</span>&lt;<span class="bi">boolean</span>&gt; {</td><td class="ann">Not exported — internal helper only called from extractRecipeFromVideo. async because it awaits the Claude API call.</td></tr>
+    <tr><td class="ln">39–44</td><td class="code"><span class="kw">const</span> <span class="va">prompt</span> = `<span class="str">Video title: ${metadata.title}
+Creator: ${metadata.uploader}
+Caption (first 500 chars): ${metadata.description.slice(0, 500) || "(none)"}
+
+Does this video teach the viewer how to cook...?
+Reply with only YES or NO.</span>`</td><td class="ann important">The question "teaches the viewer how to cook or make a recipe at home" is precisely worded. It rejects: restaurant visits, mukbangs, food reviews, cooking competitions. It accepts: step-by-step recipe tutorials. The "(none)" fallback handles videos with no caption.</td></tr>
+    <tr><td class="ln">46–52</td><td class="code"><span class="kw">const</span> <span class="va">response</span> = <span class="kw">await</span> client.messages.<span class="fn">create</span>({
+  model: <span class="str">"claude-haiku-4-5-20251001"</span>,
+  max_tokens: <span class="num">5</span>,
+  system: <span class="str">"You classify social media videos. Reply with only YES or NO."</span>,
+  messages: [{ role: <span class="str">"user"</span>, content: <span class="va">prompt</span> }],
+});</td><td class="ann warn">max_tokens:5 is the critical parameter. YES costs 1 token, NO costs 1 token. 5 gives some buffer if the model prefaces with "YES," but it's still extremely cheap. The system prompt reinforces the binary reply constraint.</td></tr>
+    <tr><td class="ln">53–58</td><td class="code"><span class="kw">const</span> <span class="va">answer</span> = response.content[<span class="num">0</span>].type === <span class="str">"text"</span>
+  ? response.content[<span class="num">0</span>].text.<span class="fn">trim</span>().<span class="fn">toUpperCase</span>()
+  : <span class="str">"NO"</span>;
+console.<span class="fn">log</span>(<span class="str">"[claude] isRecipeVideo answer:"</span>, <span class="va">answer</span>);
+<span class="kw">return</span> <span class="va">answer</span>.<span class="fn">startsWith</span>(<span class="str">"YES"</span>);</td><td class="ann key">response.content[0].type === "text" check: Anthropic SDK returns a union type — content blocks can be "text" or "tool_use". Checking the type is required. .startsWith("YES") instead of === "YES" handles "YES, this is a recipe." edge case. Defaults to "NO" (safe fallback) if no text block found.</td></tr>
+  </table>
+
+  <div class="explain-box eb-yellow">
+    <div class="eb-title">Important: Why Haiku instead of a simple rule-based check?</div>
+    One might think: "just check if the caption contains 'cups', 'tbsp', or 'recipe'". This fails for: (1) recipes with no explicit measurements ("add garlic until fragrant"); (2) non-recipes that mention food quantities ("this restaurant pours 3 cups of oil on every dish"); (3) foreign-language captions. Haiku understands context and intent — it handles all these cases in a single call for fractions of a cent, better than any regex heuristic.
+  </div>
+</section>
+
+<!-- STAGE 2 -->
+<section id="stage2">
+  <div class="section-title">🧠 Stage 2: <code>extractRecipeFromVideo()</code></div>
+
+  <div class="func-summary">
+    <div class="fs-label">What this function does</div>
+    The main exported function. Calls <strong>isRecipeVideo()</strong> as a guard, then calls <strong>buildExtractionPrompt()</strong> (from promptBuilder.ts) to construct the multimodal API payload, then calls claude-sonnet-4-6 with the full prompt. After Claude responds, calls <strong>parseClaudeResponse()</strong> to extract the JSON, then normalizes every field with null-coalescing and type validation before returning.
+  </div>
+
+  <table class="code-table">
+    <tr><td class="ln">61</td><td class="code"><span class="kw">export async function</span> <span class="fn">extractRecipeFromVideo</span>(
+  <span class="va">metadata</span>: <span class="bi">VideoMetadata</span>,
+  <span class="va">thumbnailBase64</span>: <span class="bi">string</span> | <span class="kw2">null</span>
+): <span class="bi">Promise</span>&lt;<span class="bi">Omit</span>&lt;<span class="bi">RecipeResponse</span>, <span class="str">"source_url"</span> | <span class="str">"platform"</span> | ...&gt;&gt;</td><td class="ann key">Return type is Omit&lt;RecipeResponse, "source_url" | "platform" | "thumbnail_url" | ...&gt; — it explicitly excludes fields that claudeService can't know (they're added by the route handler from the request context). This is precise TypeScript design — narrow to exactly what this function can provide.</td></tr>
+    <tr><td class="ln">66–68</td><td class="code"><span class="kw">const</span> <span class="va">isRecipe</span> = <span class="kw">await</span> <span class="fn">isRecipeVideo</span>(<span class="va">metadata</span>);
+<span class="kw">if</span> (!<span class="va">isRecipe</span>) {
+  <span class="kw">throw new</span> <span class="fn">NotARecipeError</span>();
+}</td><td class="ann important">Guard before Sonnet. If this throws, the entire function exits immediately — the Sonnet call, image processing, and DB save never happen. This is the correct pattern: fail fast at the cheapest point.</td></tr>
+    <tr><td class="ln">71</td><td class="code"><span class="kw">const</span> { <span class="va">system</span>, <span class="va">messages</span> } = <span class="fn">buildExtractionPrompt</span>(<span class="va">metadata</span>, <span class="va">thumbnailBase64</span>);</td><td class="ann">Destructuring: buildExtractionPrompt returns {system, messages}. The system prompt is a constant; messages contains the dynamic multimodal user content. Separation of prompt building from API calling is cleaner.</td></tr>
+    <tr><td class="ln">73–78</td><td class="code"><span class="kw">const</span> <span class="va">response</span> = <span class="kw">await</span> client.messages.<span class="fn">create</span>({
+  model: <span class="str">"claude-sonnet-4-6"</span>,
+  max_tokens: <span class="num">4096</span>,
+  system,
+  messages,
+});</td><td class="ann warn">max_tokens:4096 is generous — a recipe with 20 ingredients and 10 steps might need ~1500–2000 tokens. 4096 provides headroom for unusual long recipes. Too low would cause truncated JSON (and a parse error).</td></tr>
+    <tr><td class="ln">80–81</td><td class="code"><span class="kw">const</span> <span class="va">rawText</span> =
+  response.content[<span class="num">0</span>].type === <span class="str">"text"</span> ? response.content[<span class="num">0</span>].text : <span class="str">""</span>;</td><td class="ann">Same type-narrowing pattern as isRecipeVideo. Empty string fallback for the (very rare) case where Claude returns no text block.</td></tr>
+  </table>
+</section>
+
+<!-- PARSING -->
+<section id="parsing">
+  <div class="section-title">🔬 Response Parsing: <code>parseClaudeResponse()</code></div>
+
+  <div class="func-summary">
+    <div class="fs-label">What this function does</div>
+    Extracts JSON from Claude's text response. Two-level strategy: (1) regex for the expected ```json...``` code fence, (2) direct JSON.parse fallback if the fence is absent. Exported separately so it can be tested in isolation.
+  </div>
+
+  <table class="code-table">
+    <tr><td class="ln">27</td><td class="code"><span class="kw">const</span> <span class="va">match</span> = text.<span class="fn">match</span>(<span class="str">/```json\s*([\s\S]*?)```/</span>);</td><td class="ann important">Regex anatomy: ``` three literal backticks, json literal "json", \s* zero or more whitespace chars (handles newline after ```json), ([\s\S]*?) capture group matching ANY character including newlines LAZILY, ``` closing backticks. [\s\S] is "whitespace or non-whitespace" = "everything" since . skips \n.</td></tr>
+    <tr><td class="ln">28–35</td><td class="code"><span class="kw">if</span> (!<span class="va">match</span>) {
+  <span class="kw">try</span> {
+    <span class="kw">return</span> <span class="bi">JSON</span>.<span class="fn">parse</span>(<span class="va">text</span>);
+  } <span class="kw">catch</span> {
+    <span class="kw">throw new</span> <span class="bi">Error</span>(<span class="str">"Claude response did not contain valid JSON"</span>);
+  }
+}
+<span class="kw">return</span> <span class="bi">JSON</span>.<span class="fn">parse</span>(<span class="va">match</span>[<span class="num">1</span>]);</td><td class="ann key">match[0] = entire regex match including backtick fences. match[1] = capture group 1 = just the JSON text inside the fences. Fallback path handles edge cases where Claude ignores the fence instruction. Throws a meaningful error if both strategies fail.</td></tr>
+  </table>
+
+  <div class="explain-box eb-cyan">
+    <div class="eb-title">Concept: Lazy vs greedy regex quantifiers</div>
+    <code>[\s\S]*</code> is greedy — it matches as much as possible. <code>[\s\S]*?</code> is lazy — it matches as little as possible. The difference matters when there are multiple code fences in the response: greedy would span from the first <code>```json</code> to the LAST <code>```</code>, potentially including unrelated text. Lazy stops at the FIRST <code>```</code> after the opening fence. For Claude's recipe response which always has exactly one JSON block, both would work — but lazy is the correct and safer choice.
+  </div>
+</section>
+
+<!-- NORMALIZATION -->
+<section id="normalization">
+  <div class="section-title">🔧 Response Normalization</div>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:20px">After parsing, Claude's raw extraction needs normalization because LLMs can omit fields or use unexpected types. Every field is guarded:</p>
+
+  <table class="code-table">
+    <tr><td class="ln">90–95</td><td class="code"><span class="kw">const</span> <span class="va">ingredients</span> = (<span class="va">extracted</span>.ingredients ?? []).<span class="fn">map</span>((<span class="va">ing</span>) =&gt; ({
+  name: ing.name ?? <span class="str">"Unknown ingredient"</span>,
+  quantity: ing.quantity ?? <span class="kw2">null</span>,
+  unit: ing.unit ?? <span class="kw2">null</span>,
+  notes: ing.notes ?? <span class="kw2">null</span>,
+}));</td><td class="ann important">?? [] guards against Claude omitting ingredients entirely (would return null or undefined). Each field uses ?? null except name which falls back to "Unknown ingredient" — a required DB field. This ensures every ingredient object always has exactly 4 keys with valid types.</td></tr>
+    <tr><td class="ln">97–101</td><td class="code"><span class="kw">const</span> <span class="va">steps</span> = (<span class="va">extracted</span>.steps ?? []).<span class="fn">map</span>((<span class="va">step</span>, <span class="va">i</span>) =&gt; ({
+  step_number: step.step_number ?? <span class="va">i</span> + <span class="num">1</span>,
+  instruction: step.instruction ?? <span class="str">""</span>,
+  duration_minutes: step.duration_minutes ?? <span class="kw2">null</span>,
+}));</td><td class="ann key">step_number fallback to i+1 (array index + 1). If Claude omits step_number or uses 0-based numbering, we still get a valid 1-based sequence. Empty string fallback for instruction prevents DB NOT NULL constraint failures.</td></tr>
+    <tr><td class="ln">103–105</td><td class="code"><span class="kw">const</span> <span class="va">confidence</span> = <span class="kw">typeof</span> extracted.confidence === <span class="str">"number"</span>
+  ? <span class="bi">Math</span>.<span class="fn">max</span>(<span class="num">0</span>, <span class="bi">Math</span>.<span class="fn">min</span>(<span class="num">1</span>, extracted.confidence))
+  : <span class="num">0.5</span>;</td><td class="ann warn">typeof check prevents Math.max(0, Math.min(1, NaN)) = NaN. Clamp prevents values outside [0,1] from failing the PostgreSQL Float column constraint or confusing the iOS confidence display. 0.5 neutral default for absent confidence.</td></tr>
+    <tr><td class="ln">107–118</td><td class="code"><span class="kw">return</span> {
+  title: <span class="va">extracted</span>.title ?? <span class="va">metadata</span>.title ?? <span class="str">"Untitled Recipe"</span>,
+  description: <span class="va">metadata</span>.description.<span class="fn">slice</span>(<span class="num">0</span>, <span class="num">500</span>) || <span class="kw2">null</span>,
+  cook_time_minutes: <span class="va">extracted</span>.cook_time_minutes ?? <span class="kw2">null</span>,
+  ...
+};</td><td class="ann good">title has a three-level fallback: extracted title → video title from yt-dlp → "Untitled Recipe". description uses the raw caption (not Claude's extraction) — more reliable source. || null converts empty string to null (a semantic "no description").</td></tr>
+  </table>
+
+  <div class="explain-box eb-green">
+    <div class="eb-title">Good practice: Defensive normalization at the API boundary</div>
+    The RawExtraction interface uses Partial types for all fields (ingredients?: Partial&lt;Ingredient&gt;[]). This accurately reflects that Claude <em>might</em> return any subset of the schema. The normalization step converts this uncertain input into a guaranteed-valid RecipeResponse. This is the "parse, don't validate" principle — transform input into a fully valid type once at the boundary rather than sprinkling type checks throughout the codebase.
+  </div>
+</section>
+
+<!-- ERROR HANDLING -->
+<section id="errors">
+  <div class="section-title">❌ Error Handling Strategy</div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:8px;padding:16px">
+      <div style="font-weight:700;font-size:14px;color:var(--red);margin-bottom:8px">NotARecipeError</div>
+      <div style="font-size:13px;color:var(--muted)">Thrown by: <code>isRecipeVideo()</code> → NO answer<br>Caught by: route handler<br>HTTP response: 422 Unprocessable Entity<br>iOS behavior: "not a recipe" alert shown to user</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--orange);border-radius:8px;padding:16px">
+      <div style="font-weight:700;font-size:14px;color:var(--orange);margin-bottom:8px">Parse Error</div>
+      <div style="font-size:13px;color:var(--muted)">Thrown by: <code>parseClaudeResponse()</code><br>Caught by: <code>extractRecipeFromVideo()</code> try/catch<br>HTTP response: 500 with detail message<br>Cause: Claude returned non-JSON text (very rare)</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--yellow);border-radius:8px;padding:16px">
+      <div style="font-weight:700;font-size:14px;color:var(--yellow);margin-bottom:8px">Anthropic API Error</div>
+      <div style="font-size:13px;color:var(--muted)">Thrown by: <code>client.messages.create()</code><br>Propagates up to route handler<br>HTTP response: 500<br>Cause: Invalid API key, rate limit, network issue</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:8px;padding:16px">
+      <div style="font-weight:700;font-size:14px;color:var(--green);margin-bottom:8px">Image Service Error</div>
+      <div style="font-size:13px;color:var(--muted)">Swallowed by: <code>downloadAndEncodeImage()</code><br>Returns: <code>null</code><br>Effect: recipe extraction continues without image<br>Design: thumbnail is always optional</div>
+    </div>
+  </div>
+
+  <div class="explain-box eb-purple" style="margin-top:24px">
+    <div class="eb-title">Design: Error-as-value vs throw</div>
+    Notice two different error strategies: <code>imageService.downloadAndEncodeImage()</code> returns null on failure (error-as-value); <code>claudeService.extractRecipeFromVideo()</code> throws on failure (exception). The difference is intentional: a failed thumbnail is a <em>degraded but valid result</em> — the recipe can still be extracted. A failed Claude call is a <em>fatal failure</em> — there's no recipe to return. Use error-as-value for recoverable degraded states; use exceptions for unrecoverable failures.
+  </div>
+</section>
+
+<!-- INPUT/OUTPUT EXAMPLES -->
+<section id="examples">
+  <div class="section-title">📝 Concrete Input/Output Examples</div>
+
+  <h3 style="font-size:15px;color:var(--muted);margin-bottom:12px;font-weight:500">Input to <code>isRecipeVideo()</code>:</h3>
+  <div class="example-box">
+    <div class="example-bar">VideoMetadata input</div>
+    <div class="example-body"><span class="ex-key">title:</span> <span class="ex-str">"Garlic Butter Pasta that will change your life 🍝"</span>
+<span class="ex-key">uploader:</span> <span class="ex-str">"@chefjulia"</span>
+<span class="ex-key">description:</span> <span class="ex-str">"FULL RECIPE:\n500g spaghetti\n4 cloves garlic\n100g butter\nParmesan cheese\n\n1. Cook pasta al dente..."</span>
+<span class="ex-key">platform:</span> <span class="ex-str">"tiktok"</span></div>
+  </div>
+  <div class="example-box">
+    <div class="example-bar">Haiku response → answer: "YES"</div>
+    <div class="example-body"><span class="ex-bool">YES</span></div>
+  </div>
+
+  <h3 style="font-size:15px;color:var(--muted);margin:24px 0 12px;font-weight:500">Claude Sonnet response (raw text):</h3>
+  <div class="example-box">
+    <div class="example-bar">response.content[0].text</div>
+    <div class="example-body">```json
+{
+  <span class="ex-key">"title":</span> <span class="ex-str">"Garlic Butter Pasta"</span>,
+  <span class="ex-key">"cook_time_minutes":</span> <span class="ex-num">20</span>,
+  <span class="ex-key">"prep_time_minutes":</span> <span class="ex-num">5</span>,
+  <span class="ex-key">"servings":</span> <span class="ex-num">4</span>,
+  <span class="ex-key">"difficulty":</span> <span class="ex-str">"easy"</span>,
+  <span class="ex-key">"tags":</span> [<span class="ex-str">"pasta"</span>, <span class="ex-str">"quick"</span>, <span class="ex-str">"italian"</span>],
+  <span class="ex-key">"ingredients":</span> [
+    { <span class="ex-key">"name":</span> <span class="ex-str">"spaghetti"</span>, <span class="ex-key">"quantity":</span> <span class="ex-str">"500"</span>, <span class="ex-key">"unit":</span> <span class="ex-str">"g"</span>, <span class="ex-key">"notes":</span> <span class="ex-null">null</span> },
+    { <span class="ex-key">"name":</span> <span class="ex-str">"garlic"</span>, <span class="ex-key">"quantity":</span> <span class="ex-str">"4"</span>, <span class="ex-key">"unit":</span> <span class="ex-str">"cloves"</span>, <span class="ex-key">"notes":</span> <span class="ex-null">null</span> },
+    { <span class="ex-key">"name":</span> <span class="ex-str">"butter"</span>, <span class="ex-key">"quantity":</span> <span class="ex-str">"100"</span>, <span class="ex-key">"unit":</span> <span class="ex-str">"g"</span>, <span class="ex-key">"notes":</span> <span class="ex-null">null</span> }
+  ],
+  <span class="ex-key">"steps":</span> [
+    { <span class="ex-key">"step_number":</span> <span class="ex-num">1</span>, <span class="ex-key">"instruction":</span> <span class="ex-str">"Cook pasta in salted water until al dente."</span>, <span class="ex-key">"duration_minutes":</span> <span class="ex-num">10</span> }
+  ],
+  <span class="ex-key">"confidence":</span> <span class="ex-num">0.95</span>
+}
+```</div>
+  </div>
+
+  <h3 style="font-size:15px;color:var(--muted);margin:24px 0 12px;font-weight:500">After normalization — returned object:</h3>
+  <div class="example-box">
+    <div class="example-bar">extractRecipeFromVideo() return value (partial — source_url/platform added by route)</div>
+    <div class="example-body">{
+  <span class="ex-key">title:</span> <span class="ex-str">"Garlic Butter Pasta"</span>,
+  <span class="ex-key">description:</span> <span class="ex-str">"FULL RECIPE:\n500g spaghetti\n4 cloves garlic..."</span>,
+  <span class="ex-key">cook_time_minutes:</span> <span class="ex-num">20</span>,
+  <span class="ex-key">prep_time_minutes:</span> <span class="ex-num">5</span>,
+  <span class="ex-key">servings:</span> <span class="ex-num">4</span>,
+  <span class="ex-key">difficulty:</span> <span class="ex-str">"easy"</span>,
+  <span class="ex-key">tags:</span> [<span class="ex-str">"pasta"</span>, <span class="ex-str">"quick"</span>, <span class="ex-str">"italian"</span>],
+  <span class="ex-key">ingredients:</span> [
+    { <span class="ex-key">name:</span> <span class="ex-str">"spaghetti"</span>, <span class="ex-key">quantity:</span> <span class="ex-str">"500"</span>, <span class="ex-key">unit:</span> <span class="ex-str">"g"</span>, <span class="ex-key">notes:</span> <span class="ex-null">null</span> },
+    ...
+  ],
+  <span class="ex-key">steps:</span> [
+    { <span class="ex-key">step_number:</span> <span class="ex-num">1</span>, <span class="ex-key">instruction:</span> <span class="ex-str">"Cook pasta..."</span>, <span class="ex-key">duration_minutes:</span> <span class="ex-num">10</span> }
+  ],
+  <span class="ex-key">extraction_confidence:</span> <span class="ex-num">0.95</span>
+}</div>
+  </div>
+</section>
+
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:13px">
+  <a href="index.html">← Study Kit Hub</a> &nbsp;·&nbsp;
+  <a href="deep-dive-llm.html">→ LLM Prompts Deep Dive</a>
+</footer>
+</body>
+</html>

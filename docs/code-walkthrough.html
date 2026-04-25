@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Walkthrough — RecipeWizard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--green:#3fb950;--green-dim:#1a3a20;--blue:#58a6ff;--blue-dim:#0d2a4a;--orange:#d29922;--orange-dim:#3a2a00;--purple:#bc8cff;--purple-dim:#2d1f4a;--red:#f85149;--red-dim:#3a1010;--yellow:#e3b341;--yellow-dim:#3a2e00;--cyan:#39c5cf;--cyan-dim:#0d3038;--ai:#e879f9;--ai-dim:#3a1050}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Heebo',sans-serif;line-height:1.6}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+nav{position:sticky;top:0;background:rgba(13,17,23,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);z-index:100;padding:0 24px;height:52px;display:flex;align-items:center;gap:24px}
+.logo{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:14px}
+.nav-links{display:flex;gap:16px;margin-left:auto;flex-wrap:wrap}
+.nav-links a{font-size:12px;color:var(--muted)}
+.nav-links a:hover{color:var(--text);text-decoration:none}
+.container{max-width:1200px;margin:0 auto;padding:24px}
+/* File header */
+.file-header{border-radius:12px;padding:20px 24px;margin:40px 0 0;display:flex;align-items:flex-start;gap:16px;border:1px solid}
+.file-icon{font-size:28px;margin-top:2px}
+.file-title{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;margin-bottom:4px}
+.file-desc{font-size:13px;opacity:.8}
+/* Func divider */
+.func-divider{display:flex;align-items:center;gap:12px;margin:32px 0 0;padding:10px 0}
+.func-divider::before,.func-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.func-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;white-space:nowrap;padding:4px 12px;border-radius:6px}
+/* Func summary */
+.func-summary{margin:0 0 16px;padding:14px 18px;background:var(--surface2);border:1px solid var(--border);border-left:4px solid var(--muted);border-radius:8px;font-size:14px;color:var(--text);line-height:1.7}
+.func-summary .fs-label{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-family:'JetBrains Mono',monospace}
+.func-summary strong{color:var(--cyan)}
+/* Code table */
+.code-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:24px}
+.code-table td{vertical-align:top;border-bottom:1px solid rgba(48,54,61,.5)}
+.code-table tr:hover td{background:rgba(28,33,40,.7)}
+.ln{width:40px;text-align:right;padding:3px 10px 3px 0;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;user-select:none;border-right:1px solid var(--border)}
+.code{padding:3px 14px;font-family:'JetBrains Mono',monospace;white-space:pre;color:var(--text)}
+.ann{padding:3px 14px 3px 16px;font-size:12px;color:var(--text);border-left:3px solid transparent;line-height:1.55;min-width:200px}
+.ann.important{border-left-color:var(--yellow)}
+.ann.key{border-left-color:var(--cyan)}
+.ann.warn{border-left-color:var(--orange)}
+.ann.good{border-left-color:var(--green)}
+/* Syntax */
+.kw{color:#ff7b72}.fn{color:#d2a8ff}.str{color:#a5d6ff}.num{color:#79c0ff}.cm{color:#484f58;font-style:italic}.bi{color:#ffa657}.op{color:#ff7b72}.va{color:#e6edf3}.kw2{color:#79c0ff}
+/* File badges */
+.fb{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:1px 7px;border-radius:4px;margin-right:4px;vertical-align:middle}
+.fb-ret{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;color:#484f58;margin-top:3px}
+.fb-index{background:var(--blue-dim);color:var(--blue)}
+.fb-recipes{background:var(--green-dim);color:var(--green)}
+.fb-auth-route{background:var(--purple-dim);color:var(--purple)}
+.fb-userrecipes{background:var(--cyan-dim);color:var(--cyan)}
+.fb-health{background:var(--yellow-dim);color:var(--yellow)}
+.fb-video{background:var(--orange-dim);color:var(--orange)}
+.fb-image{background:var(--red-dim);color:var(--red)}
+.fb-claude{background:var(--ai-dim);color:var(--ai)}
+.fb-imggen{background:var(--cyan-dim);color:var(--cyan)}
+.fb-recipe-svc{background:var(--green-dim);color:var(--green)}
+.fb-user-svc{background:var(--blue-dim);color:var(--blue)}
+.fb-authmw{background:var(--yellow-dim);color:var(--yellow)}
+.fb-prompt{background:var(--ai-dim);color:var(--ai)}
+.fb-url{background:var(--orange-dim);color:var(--orange)}
+.fb-prisma{background:var(--cyan-dim);color:var(--cyan)}
+.fb-types{background:#1c2128;color:var(--muted)}
+/* Explain boxes */
+.explain-box{border-radius:8px;padding:14px 18px;margin:0 0 24px;font-size:13px;line-height:1.7;border:1px solid}
+.explain-box .eb-title{font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;margin-bottom:8px;font-family:'JetBrains Mono',monospace}
+.eb-orange{background:var(--orange-dim);border-color:var(--orange);color:#e6d0a0}
+.eb-orange .eb-title{color:var(--orange)}
+.eb-cyan{background:var(--cyan-dim);border-color:var(--cyan);color:#b0e8ec}
+.eb-cyan .eb-title{color:var(--cyan)}
+.eb-purple{background:var(--purple-dim);border-color:var(--purple);color:#d8c4f8}
+.eb-purple .eb-title{color:var(--purple)}
+.eb-green{background:var(--green-dim);border-color:var(--green);color:#b0d8b8}
+.eb-green .eb-title{color:var(--green)}
+.eb-yellow{background:var(--yellow-dim);border-color:var(--yellow);color:#e8d490}
+.eb-yellow .eb-title{color:var(--yellow)}
+.eb-blue{background:var(--blue-dim);border-color:var(--blue);color:#a8c8f0}
+.eb-blue .eb-title{color:var(--blue)}
+/* Function signature */
+.func-sig{background:#010409;border:1px solid var(--border);border-radius:6px;padding:10px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;margin:8px 0 12px;overflow-x:auto;white-space:pre;line-height:1.7}
+.sig-kw{color:#ff7b72}.sig-mod{color:#79c0ff}.sig-fn{color:#d2a8ff}.sig-type{color:#ffa657}.sig-param{color:#e6edf3}.sig-ret{color:#79c0ff}.sig-cm{color:#484f58;font-style:italic}
+/* Data-flow arrows */
+.flow-arrow{text-align:center;color:var(--muted);font-size:13px;padding:12px 0;font-family:'JetBrains Mono',monospace}
+code{font-family:'JetBrains Mono',monospace;font-size:.88em;background:var(--surface2);padding:1px 5px;border-radius:4px}
+@media(max-width:900px){.ann{display:none}.code-table td.ln{width:28px}.code{font-size:11px}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">← RecipeWizard Study Kit</a>
+  <div class="nav-links">
+    <a href="#index">index.ts</a>
+    <a href="#authmw">auth middleware</a>
+    <a href="#urlval">urlValidator</a>
+    <a href="#videoex">videoExtractor</a>
+    <a href="#imgsvc">imageService</a>
+    <a href="#claude">claudeService</a>
+    <a href="#prompt">promptBuilder</a>
+    <a href="#imggen">imageGeneration</a>
+    <a href="#recipesvc">recipeService</a>
+    <a href="#usersvc">userService</a>
+    <a href="#routes">routes</a>
+    <a href="#types">types</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<h1 style="font-size:28px;font-weight:900;margin-bottom:8px">Code Walkthrough</h1>
+<p style="color:var(--muted);font-size:15px;margin-bottom:40px">Every function in the backend, line by line. Annotations explain what each statement does, what it returns, and why it was written this way.</p>
+
+<!-- ════════════════════════════════════════════════ index.ts ═══════-->
+<div id="index" class="file-header" style="background:var(--blue-dim);border-color:var(--blue)">
+  <div class="file-icon">🚪</div>
+  <div>
+    <div class="file-title">backend/src/index.ts</div>
+    <div class="file-desc">Express app entry point — wires up middleware, rate limiting, and routes, then starts the HTTP server.</div>
+  </div>
+</div>
+
+<div class="func-divider"><span class="func-name" style="background:var(--blue-dim);color:var(--blue)">module level (imports + server bootstrap)</span></div>
+<div class="func-summary">
+  <div class="fs-label">What this file does</div>
+  Creates the Express application, attaches global middleware (CORS, JSON parsing, logging, rate limiting), mounts all route groups, and starts listening on a port. This is the single entry point — Node runs this file directly with <strong>ts-node-dev</strong> in dev or <strong>node dist/index.js</strong> in production.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">1</td><td class="code"><span class="kw">import</span> <span class="str">"dotenv/config"</span>;</td><td class="ann key">Loads .env file into process.env at module load time. Must be the VERY FIRST import so all subsequent code can read env vars.</td></tr>
+<tr><td class="ln">2</td><td class="code"><span class="kw">import</span> <span class="va">express</span> <span class="kw">from</span> <span class="str">"express"</span>;</td><td class="ann">Express framework — HTTP server + routing.</td></tr>
+<tr><td class="ln">3</td><td class="code"><span class="kw">import</span> <span class="va">cors</span> <span class="kw">from</span> <span class="str">"cors"</span>;</td><td class="ann">Adds CORS headers so iOS app (different origin) can call this API.</td></tr>
+<tr><td class="ln">4</td><td class="code"><span class="kw">import</span> <span class="va">rateLimit</span>, { <span class="va">ipKeyGenerator</span> } <span class="kw">from</span> <span class="str">"express-rate-limit"</span>;</td><td class="ann warn">Rate limiter + IP key generator. Both imported — ipKeyGenerator used as fallback when user isn't authenticated.</td></tr>
+<tr><td class="ln">5–8</td><td class="code"><span class="kw">import</span> <span class="va">healthRouter</span> <span class="kw">from</span> <span class="str">"./routes/health"</span>;
+<span class="kw">import</span> <span class="va">recipesRouter</span> <span class="kw">from</span> <span class="str">"./routes/recipes"</span>;
+<span class="kw">import</span> <span class="va">authRouter</span> <span class="kw">from</span> <span class="str">"./routes/auth"</span>;
+<span class="kw">import</span> <span class="va">userRecipesRouter</span> <span class="kw">from</span> <span class="str">"./routes/userRecipes"</span>;</td><td class="ann">Each route module is a separate Express Router. Separation of concerns — each file owns one resource.</td></tr>
+<tr><td class="ln">10</td><td class="code"><span class="kw">export const</span> <span class="va">app</span> = <span class="fn">express</span>();</td><td class="ann key">Named export — allows tests (supertest) to import the app without starting the server.</td></tr>
+<tr><td class="ln">11</td><td class="code"><span class="kw">const</span> <span class="va">PORT</span> = <span class="fn">parseInt</span>(process.env.<span class="va">PORT</span> ?? <span class="str">"8000"</span>, <span class="num">10</span>);</td><td class="ann important">parseInt with radix 10 prevents octal parsing. Railway injects PORT automatically; defaults to 8000 locally.</td></tr>
+<tr><td class="ln">14</td><td class="code">app.<span class="fn">use</span>(<span class="fn">cors</span>());</td><td class="ann">Allows all origins (default). Sufficient for mobile app — no browser Same-Origin policy applies.</td></tr>
+<tr><td class="ln">15</td><td class="code">app.<span class="fn">use</span>(express.<span class="fn">json</span>({ limit: <span class="str">"10mb"</span> }));</td><td class="ann warn">10 MB limit because requests may include base64-encoded thumbnail images (~750 KB). Default is 100 KB which would reject them.</td></tr>
+<tr><td class="ln">18–21</td><td class="code">app.<span class="fn">use</span>((<span class="va">req</span>, <span class="va">_res</span>, <span class="va">next</span>) =&gt; {
+  console.<span class="fn">log</span>(`[${<span class="kw">new</span> <span class="bi">Date</span>().<span class="fn">toISOString</span>()}] ${req.method} ${req.path}`);
+  <span class="fn">next</span>();
+});</td><td class="ann">Request logger — prints timestamp, HTTP method, and path to stdout. In Railway, stdout is captured as structured logs.</td></tr>
+<tr><td class="ln">24–34</td><td class="code">app.<span class="fn">use</span>(<span class="str">"/api/v1"</span>, <span class="fn">rateLimit</span>({
+  windowMs: <span class="num">60</span> * <span class="num">1000</span>,
+  max: <span class="num">60</span>,
+  keyGenerator: (<span class="va">req</span>) =&gt;
+    req.user?.userId ?? <span class="fn">ipKeyGenerator</span>(req.ip ?? <span class="str">"anonymous"</span>),
+  standardHeaders: <span class="kw2">true</span>,
+  legacyHeaders: <span class="kw2">false</span>,
+  message: { error: <span class="str">"Too many requests..."</span> },
+}));</td><td class="ann important">60 requests per minute per USER (not per IP). Rate-limits by userId if authenticated — prevents one user from hammering the API. Falls back to IP for anonymous requests. standardHeaders:true sends RateLimit-* headers (RFC 6585).</td></tr>
+<tr><td class="ln">37</td><td class="code">app.<span class="fn">use</span>(<span class="str">"/"</span>, <span class="va">healthRouter</span>);</td><td class="ann">Health check at GET /health — no auth required, used by Railway health probes.</td></tr>
+<tr><td class="ln">38</td><td class="code">app.<span class="fn">use</span>(<span class="str">"/api/v1/auth"</span>, <span class="va">authRouter</span>);</td><td class="ann">Public auth routes — no requireAuth middleware. POST /api/v1/auth/google exchanges Google tokens for JWTs.</td></tr>
+<tr><td class="ln">39</td><td class="code">app.<span class="fn">use</span>(<span class="str">"/api/v1"</span>, <span class="va">recipesRouter</span>);</td><td class="ann">Mounts /api/v1/extract. requireAuth is applied inside recipesRouter per-route, not globally.</td></tr>
+<tr><td class="ln">40</td><td class="code">app.<span class="fn">use</span>(<span class="str">"/api/v1/recipes"</span>, <span class="va">userRecipesRouter</span>);</td><td class="ann">CRUD for saved recipes — GET /api/v1/recipes, DELETE /api/v1/recipes/:id. requireAuth applied inside via router.use().</td></tr>
+<tr><td class="ln">43–58</td><td class="code"><span class="kw">if</span> (require.main === module) {
+  app.<span class="fn">listen</span>(<span class="va">PORT</span>, () =&gt; { ... });
+}</td><td class="ann key">require.main === module is true only when Node runs this file directly (not when imported by tests). Prevents the server from auto-starting during test runs (supertest handles its own binding).</td></tr>
+</table>
+
+<div class="explain-box eb-orange">
+  <div class="eb-title">⚠️ Why <code>req.user?.userId ?? ipKeyGenerator(req.ip)</code> — not just IP?</div>
+  IP-based rate limiting is easily bypassed by users sharing NAT (office, mobile carrier) or using proxies. By keying on the authenticated userId, every user gets their own 60-req/min budget. The <code>??</code> nullish-coalescing fallback covers the <code>/auth/google</code> route which runs before <code>requireAuth</code>.
+</div>
+
+<div class="flow-arrow">↓ request passes through middleware and reaches route handler ↓</div>
+
+<!-- ════════════════════════════════════════════════ middleware/auth.ts ═══════-->
+<div id="authmw" class="file-header" style="background:var(--yellow-dim);border-color:var(--yellow)">
+  <div class="file-icon">🔐</div>
+  <div>
+    <div class="file-title">backend/src/middleware/auth.ts</div>
+    <div class="file-desc">JWT authentication middleware — validates Bearer tokens and attaches the decoded user payload to req.user.</div>
+  </div>
+</div>
+
+<div class="func-divider"><span class="func-name" style="background:var(--yellow-dim);color:var(--yellow)">requireAuth(req, res, next)</span></div>
+<div class="func-sig"><span class="sig-mod">export</span> <span class="sig-kw">function</span> <span class="sig-fn">requireAuth</span>(
+  <span class="sig-param">req</span>: <span class="sig-type">Request</span>,
+  <span class="sig-param">res</span>: <span class="sig-type">Response</span>,
+  <span class="sig-param">next</span>: <span class="sig-type">NextFunction</span>
+): <span class="sig-ret">void</span></div>
+<div class="func-summary">
+  <div class="fs-label">What this function does</div>
+  Express middleware that acts as a guard. It reads the Authorization header, verifies the JWT using the server's secret, and either stops the request with a 401 error or attaches the decoded payload to <strong>req.user</strong> and passes control forward. Called by route handlers via <code>router.post("/extract", requireAuth, async ...)</code>.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">4–7</td><td class="code"><span class="kw">export interface</span> <span class="bi">AuthPayload</span> {
+  userId: <span class="bi">string</span>;
+  email: <span class="bi">string</span>;
+}</td><td class="ann key">The shape of the decoded JWT payload. Defined here so both the middleware and userService.signJwt() agree on the structure.</td></tr>
+<tr><td class="ln">9–15</td><td class="code"><span class="kw">declare global</span> {
+  <span class="kw">namespace</span> <span class="bi">Express</span> {
+    <span class="kw">interface</span> <span class="bi">Request</span> {
+      user?: <span class="bi">AuthPayload</span>;
+    }
+  }
+}</td><td class="ann important">TypeScript module augmentation — extends Express's built-in Request type to include the optional user field. Without this, <code>req.user</code> would be a type error. The ? means it's optional — unauthenticated routes won't have it.</td></tr>
+<tr><td class="ln">17</td><td class="code"><span class="kw">export function</span> <span class="fn">requireAuth</span>(<span class="va">req</span>, <span class="va">res</span>, <span class="va">next</span>): <span class="kw2">void</span> {</td><td class="ann">Return type void is required for Express middleware — TypeScript enforces that you call next() or send a response, not both.</td></tr>
+<tr><td class="ln">18–21</td><td class="code"><span class="kw">const</span> <span class="va">header</span> = req.headers.authorization;
+<span class="kw">if</span> (!header?.startsWith(<span class="str">"Bearer "</span>)) {
+  res.<span class="fn">status</span>(<span class="num">401</span>).<span class="fn">json</span>({ error: <span class="str">"..."</span> });
+  <span class="kw">return</span>;</td><td class="ann warn">Optional chaining (?.) handles the case where the header is absent. "Bearer " (with space) is the standard RFC 6750 format. Returns early — MUST return after res.send() to prevent "headers already sent" errors.</td></tr>
+<tr><td class="ln">22</td><td class="code"><span class="kw">const</span> <span class="va">token</span> = header.<span class="fn">slice</span>(<span class="num">7</span>);</td><td class="ann">slice(7) strips "Bearer " (7 characters: B-e-a-r-e-r-space) to get just the token string.</td></tr>
+<tr><td class="ln">23–28</td><td class="code"><span class="kw">try</span> {
+  <span class="kw">const</span> <span class="va">payload</span> = jwt.<span class="fn">verify</span>(<span class="va">token</span>, process.env.<span class="va">JWT_SECRET</span>!) <span class="kw">as</span> <span class="bi">AuthPayload</span>;
+  req.user = <span class="va">payload</span>;
+  <span class="fn">next</span>();
+} <span class="kw">catch</span> {
+  res.<span class="fn">status</span>(<span class="num">401</span>).<span class="fn">json</span>({ error: <span class="str">"Invalid or expired token"</span> });
+}</td><td class="ann key">jwt.verify() throws if: signature invalid, token expired, or secret wrong. The ! non-null assertion on JWT_SECRET trusts that startup checked for it (it logs a warning if missing). Cast to AuthPayload is safe because signJwt() always writes that exact shape.</td></tr>
+</table>
+
+<div class="explain-box eb-cyan">
+  <div class="eb-title">Concept: Module Augmentation (declare global)</div>
+  TypeScript's <code>declare global</code> lets you add properties to types defined in third-party libraries. Here it extends Express's <code>Request</code> interface so TypeScript knows <code>req.user</code> exists. Without it, <code>req.user.userId</code> would be a compile error — you'd have to use <code>(req as any).user</code>. This pattern is common for attaching custom data to framework request objects.
+</div>
+
+<!-- ════════════════════════════════════════════════ urlValidator.ts ═══════-->
+<div id="urlval" class="file-header" style="background:var(--orange-dim);border-color:var(--orange)">
+  <div class="file-icon">🔗</div>
+  <div>
+    <div class="file-title">backend/src/utils/urlValidator.ts</div>
+    <div class="file-desc">URL pattern matching — validates TikTok/Instagram URLs and extracts URLs from share copy-text.</div>
+  </div>
+</div>
+
+<div class="func-divider"><span class="func-name" style="background:var(--orange-dim);color:var(--orange)">constants + isSupportedUrl() + detectPlatform() + extractUrlFromText()</span></div>
+<div class="func-sig"><span class="sig-mod">export</span> <span class="sig-kw">function</span> <span class="sig-fn">isSupportedUrl</span>(<span class="sig-param">url</span>: <span class="sig-type">string</span>): <span class="sig-ret">boolean</span>
+
+<span class="sig-mod">export</span> <span class="sig-kw">function</span> <span class="sig-fn">detectPlatform</span>(<span class="sig-param">url</span>: <span class="sig-type">string</span>): <span class="sig-ret">"tiktok" | "instagram" | "unknown"</span>
+
+<span class="sig-mod">export</span> <span class="sig-kw">function</span> <span class="sig-fn">extractUrlFromText</span>(<span class="sig-param">text</span>: <span class="sig-type">string</span>): <span class="sig-ret">string | null</span></div>
+<div class="func-summary">
+  <div class="fs-label">What this module does</div>
+  Three URL utilities. <strong>isSupportedUrl()</strong> validates that a URL is from TikTok or Instagram before spending API credits. <strong>extractUrlFromText()</strong> handles TikTok's share behavior where the URL is embedded in surrounding copy-text. <strong>detectPlatform()</strong> returns a string label used for the recipe's platform field.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">1–5</td><td class="code"><span class="kw">const</span> <span class="va">TIKTOK_PATTERNS</span> = [
+  <span class="str">/https?:\/\/(www\.)?tiktok\.com\/@[\w.]+\/video\/\d+/</span>,
+  <span class="str">/https?:\/\/vm\.tiktok\.com\/\w+/</span>,
+  <span class="str">/https?:\/\/vt\.tiktok\.com\/\w+/</span>,
+];</td><td class="ann important">Three TikTok URL formats: (1) full desktop URL with @username/video/id, (2) mobile shortlink vm.tiktok.com, (3) vt.tiktok.com shortlink used in some regions. All three covered.</td></tr>
+<tr><td class="ln">7–9</td><td class="code"><span class="kw">const</span> <span class="va">INSTAGRAM_PATTERNS</span> = [
+  <span class="str">/https?:\/\/(www\.)?instagram\.com\/(reel|p|tv)\/[\w-]+/</span>,
+];</td><td class="ann">One regex covers /reel/, /p/ (photo post that can be a video), and /tv/ (IGTV). [\w-]+ matches the base62 post ID.</td></tr>
+<tr><td class="ln">11–15</td><td class="code"><span class="kw">export function</span> <span class="fn">isSupportedUrl</span>(<span class="va">url</span>): <span class="bi">boolean</span> {
+  <span class="kw">return</span> (
+    <span class="va">TIKTOK_PATTERNS</span>.<span class="fn">some</span>((<span class="va">p</span>) =&gt; p.<span class="fn">test</span>(<span class="va">url</span>)) ||
+    <span class="va">INSTAGRAM_PATTERNS</span>.<span class="fn">some</span>((<span class="va">p</span>) =&gt; p.<span class="fn">test</span>(<span class="va">url</span>))
+  );
+}</td><td class="ann key">.some() short-circuits — stops testing after first match. Returns boolean, not the matched platform. Checks both arrays before returning false.</td></tr>
+<tr><td class="ln">25–28</td><td class="code"><span class="kw">export function</span> <span class="fn">extractUrlFromText</span>(<span class="va">text</span>): <span class="bi">string</span> | <span class="kw2">null</span> {
+  <span class="kw">const</span> <span class="va">match</span> = text.<span class="fn">match</span>(<span class="str">/https?:\/\/[^\s]+/</span>);
+  <span class="kw">return</span> <span class="va">match</span> ? <span class="va">match</span>[<span class="num">0</span>] : <span class="kw2">null</span>;
+}</td><td class="ann">Regex: https:// or http:// followed by any non-whitespace chars. Handles TikTok iOS share text: "Check out @chef's video! https://vm.tiktok.com/XYZ". match() returns null if no match — ternary returns null.</td></tr>
+</table>
+
+<div class="explain-box eb-orange">
+  <div class="eb-title">⚠️ Regex gotcha: <code>/https?:\/\/[^\s]+/</code> may include trailing punctuation</div>
+  If a user sends "https://vm.tiktok.com/ABC!" the regex captures the exclamation mark. This is intentional — yt-dlp handles extra trailing chars gracefully. If needed, a stricter regex like <code>/https?:\/\/[^\s.,!?]+/</code> would trim punctuation. Currently not needed in practice.
+</div>
+
+<div class="flow-arrow">↓ validated URL passed to videoExtractor ↓</div>
+
+<!-- ════════════════════════════════════════════════ videoExtractor.ts ═══════-->
+<div id="videoex" class="file-header" style="background:var(--orange-dim);border-color:var(--orange)">
+  <div class="file-icon">📹</div>
+  <div>
+    <div class="file-title">backend/src/services/videoExtractor.ts</div>
+    <div class="file-desc">Spawns the yt-dlp CLI process to extract video metadata (title, description, thumbnail) without downloading any video.</div>
+  </div>
+</div>
+
+<div class="func-divider"><span class="func-name" style="background:var(--orange-dim);color:var(--orange)">module-level cookie setup</span></div>
+<div class="func-summary">
+  <div class="fs-label">What this section does</div>
+  Runs once at startup. If <strong>INSTAGRAM_COOKIES_B64</strong> is set, it decodes the base64 string and writes a temp cookies.txt file. This is the Railway-friendly approach — env vars can't contain newlines but base64 can. If only INSTAGRAM_COOKIES_PATH is set, uses that path directly.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">7</td><td class="code"><span class="kw">const</span> <span class="va">ytDlp</span> = <span class="kw">new</span> <span class="fn">YTDlpWrap</span>();</td><td class="ann">YTDlpWrap finds yt-dlp on the system PATH. No path needed if yt-dlp is globally installed.</td></tr>
+<tr><td class="ln">10</td><td class="code"><span class="kw">let</span> <span class="va">resolvedCookiesPath</span>: <span class="bi">string</span> | <span class="kw2">null</span> = <span class="kw2">null</span>;</td><td class="ann">Module-level variable — set once at startup, reused for every request. Avoids re-decoding base64 on every call.</td></tr>
+<tr><td class="ln">15–18</td><td class="code"><span class="kw">if</span> (<span class="va">cookiesB64</span>) {
+  <span class="kw">const</span> <span class="va">tmpPath</span> = path.<span class="fn">join</span>(os.<span class="fn">tmpdir</span>(), <span class="str">"instagram_cookies.txt"</span>);
+  fs.<span class="fn">writeFileSync</span>(<span class="va">tmpPath</span>, <span class="bi">Buffer</span>.<span class="fn">from</span>(<span class="va">cookiesB64</span>, <span class="str">"base64"</span>));
+  <span class="va">resolvedCookiesPath</span> = <span class="va">tmpPath</span>;</td><td class="ann key">os.tmpdir() returns /tmp on Linux (Railway). Buffer.from(str, "base64") decodes base64 to binary. writeFileSync (sync) at startup is fine — no concurrency concern here.</td></tr>
+</table>
+
+<div class="func-divider"><span class="func-name" style="background:var(--orange-dim);color:var(--orange)">buildArgs(url): string[]</span></div>
+<div class="func-sig"><span class="sig-kw">function</span> <span class="sig-fn">buildArgs</span>(<span class="sig-param">url</span>: <span class="sig-type">string</span>): <span class="sig-ret">string[]</span>  <span class="sig-cm">// private — not exported</span></div>
+<div class="func-summary">
+  <div class="fs-label">What this function does</div>
+  Constructs the CLI argument array for yt-dlp. Returns different arrays depending on whether cookies are configured. The args are passed to <strong>ytDlp.execPromise()</strong> which spawns the subprocess.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">23–31</td><td class="code"><span class="kw">function</span> <span class="fn">buildArgs</span>(<span class="va">url</span>: <span class="bi">string</span>): <span class="bi">string</span>[] {
+  <span class="kw">const</span> <span class="va">args</span> = [<span class="str">"--dump-json"</span>, <span class="str">"--no-playlist"</span>, <span class="str">"--no-warnings"</span>, <span class="va">url</span>];
+  <span class="kw">if</span> (<span class="va">resolvedCookiesPath</span>) {
+    args.<span class="fn">unshift</span>(<span class="str">"--cookies"</span>, <span class="va">resolvedCookiesPath</span>);
+  }
+  <span class="kw">return</span> <span class="va">args</span>;
+}</td><td class="ann important">--dump-json: print metadata as JSON, don't download. --no-playlist: only the single video (not the whole channel). --no-warnings: clean stderr. unshift() prepends --cookies BEFORE the URL so yt-dlp parses them in order.</td></tr>
+</table>
+
+<div class="func-divider"><span class="func-name" style="background:var(--orange-dim);color:var(--orange)">extractVideoMetadata(url): Promise&lt;VideoMetadata&gt;</span></div>
+<div class="func-sig"><span class="sig-mod">export</span> <span class="sig-kw">async function</span> <span class="sig-fn">extractVideoMetadata</span>(
+  <span class="sig-param">url</span>: <span class="sig-type">string</span>
+): <span class="sig-ret">Promise&lt;VideoMetadata&gt;</span></div>
+<div class="func-summary">
+  <div class="fs-label">What this function does</div>
+  The main export. Runs yt-dlp as a subprocess, gets back a large JSON blob, and extracts the 7 fields that matter: title, description, thumbnail_url, uploader, duration, platform, webpage_url. Detects platform from extractor_key. Picks the best-resolution thumbnail ≤ 1280px.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">33</td><td class="code"><span class="kw">export async function</span> <span class="fn">extractVideoMetadata</span>(<span class="va">url</span>):</td><td class="ann">Async because it awaits the subprocess. Exports so routes/recipes.ts can import it.</td></tr>
+<tr><td class="ln">36–42</td><td class="code"><span class="kw">let</span> <span class="va">rawJson</span>: <span class="bi">string</span>;
+<span class="kw">try</span> {
+  <span class="va">rawJson</span> = <span class="kw">await</span> ytDlp.<span class="fn">execPromise</span>(<span class="va">args</span>);
+} <span class="kw">catch</span> (<span class="va">err</span>: <span class="kw">unknown</span>) {
+  <span class="kw">const</span> <span class="va">message</span> = <span class="va">err</span> <span class="kw">instanceof</span> <span class="bi">Error</span> ? err.message : <span class="bi">String</span>(<span class="va">err</span>);
+  <span class="kw">throw new</span> <span class="bi">Error</span>(`yt-dlp extraction failed: ${<span class="va">message</span>}`);
+}</td><td class="ann warn">err: unknown forces explicit type narrowing before accessing .message. This is the correct TypeScript pattern — caught values are unknown, not Error, since anything can be thrown.</td></tr>
+<tr><td class="ln">50–57</td><td class="code"><span class="kw">const</span> <span class="va">extractorKey</span> = <span class="bi">String</span>(info[<span class="str">"extractor_key"</span>] ?? <span class="str">""</span>).<span class="fn">toLowerCase</span>();
+<span class="kw">const</span> <span class="va">platform</span> = <span class="va">extractorKey</span>.<span class="fn">includes</span>(<span class="str">"tiktok"</span>)
+  ? <span class="str">"tiktok"</span>
+  : <span class="va">extractorKey</span>.<span class="fn">includes</span>(<span class="str">"instagram"</span>)
+    ? <span class="str">"instagram"</span>
+    : <span class="va">extractorKey</span> || <span class="str">"unknown"</span>;</td><td class="ann key">yt-dlp returns extractor_key like "TikTok" or "Instagram". .toLowerCase() + .includes() for case-insensitive check. Nested ternary falls through to the raw extractorKey or "unknown".</td></tr>
+<tr><td class="ln">59–66</td><td class="code"><span class="kw">const</span> <span class="va">thumbnails</span> = info[<span class="str">"thumbnails"</span>] <span class="kw">as</span> ...;
+<span class="kw">if</span> (<span class="va">thumbnails</span> &amp;&amp; thumbnails.length &gt; <span class="num">0</span>) {
+  <span class="kw">const</span> <span class="va">mid</span> = thumbnails.<span class="fn">find</span>((<span class="va">t</span>) =&gt; t.width &amp;&amp; t.width &lt;= <span class="num">1280</span>)
+    ?? thumbnails[thumbnails.length - <span class="num">1</span>];
+  <span class="va">thumbnailUrl</span> = mid.url ?? <span class="kw2">null</span>;
+}</td><td class="ann important">yt-dlp provides multiple thumbnail sizes. Prefers one ≤ 1280px — large enough for Claude's vision but not oversized. ?? operator falls back to the last thumbnail if none are ≤ 1280px (e.g. very small videos that only have one option).</td></tr>
+</table>
+
+<div class="explain-box eb-purple">
+  <div class="eb-title">Design: Why not download the video?</div>
+  <code>--dump-json</code> flag tells yt-dlp to output metadata as JSON and exit immediately. No bytes of video are transferred. This is intentional: (1) much faster — metadata takes ~1–2 seconds vs. 30–60+ seconds to download a video; (2) no storage needed; (3) the thumbnail URL alone is sufficient for Claude's vision analysis. The actual recipe is in the caption text, not the video frames.
+</div>
+
+<div class="flow-arrow">↓ VideoMetadata passed to imageService and claudeService ↓</div>
+
+<!-- ════════════════════════════════════════════════ imageService.ts ═══════-->
+<div id="imgsvc" class="file-header" style="background:var(--red-dim);border-color:var(--red)">
+  <div class="file-icon">🖼️</div>
+  <div>
+    <div class="file-title">backend/src/services/imageService.ts</div>
+    <div class="file-desc">Downloads a thumbnail URL, resizes it to ≤1024px, and returns a base64-encoded JPEG for Claude's vision API.</div>
+  </div>
+</div>
+
+<div class="func-divider"><span class="func-name" style="background:var(--red-dim);color:var(--red)">downloadAndEncodeImage(url): Promise&lt;string|null&gt;</span></div>
+<div class="func-sig"><span class="sig-mod">export</span> <span class="sig-kw">async function</span> <span class="sig-fn">downloadAndEncodeImage</span>(
+  <span class="sig-param">url</span>: <span class="sig-type">string</span>
+): <span class="sig-ret">Promise&lt;string | null&gt;</span></div>
+<div class="func-summary">
+  <div class="fs-label">What this function does</div>
+  Downloads the thumbnail from the CDN URL returned by yt-dlp, resizes it using sharp (fast C++ image library), and encodes the result as a base64 data URL string. Returns null on any error — thumbnail is optional, Claude can still extract a recipe from text alone.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">4</td><td class="code"><span class="kw">const</span> <span class="va">MAX_WIDTH</span> = <span class="fn">parseInt</span>(process.env.<span class="va">THUMBNAIL_MAX_WIDTH</span> ?? <span class="str">"1024"</span>, <span class="num">10</span>);</td><td class="ann">Configurable via env var. Default 1024px. Larger = more detail for Claude but larger base64 payload and higher API cost.</td></tr>
+<tr><td class="ln">9–14</td><td class="code"><span class="kw">const</span> <span class="va">response</span> = <span class="kw">await</span> axios.<span class="fn">get</span>(<span class="va">url</span>, {
+  responseType: <span class="str">"arraybuffer"</span>,
+  timeout: <span class="num">10_000</span>,
+  headers: { <span class="str">"User-Agent"</span>: <span class="str">"Mozilla/5.0 ..."</span> },
+});</td><td class="ann important">responseType:"arraybuffer" returns raw binary data instead of a string. 10 second timeout prevents hanging on slow CDNs. Browser User-Agent is required — some CDNs block requests without it.</td></tr>
+<tr><td class="ln">16–20</td><td class="code"><span class="kw">const</span> <span class="va">buffer</span> = <span class="bi">Buffer</span>.<span class="fn">from</span>(<span class="va">response</span>.data);
+<span class="kw">const</span> <span class="va">resized</span> = <span class="kw">await</span> <span class="fn">sharp</span>(<span class="va">buffer</span>)
+  .<span class="fn">resize</span>({ width: <span class="va">MAX_WIDTH</span>, withoutEnlargement: <span class="kw2">true</span> })
+  .<span class="fn">jpeg</span>({ quality: <span class="num">85</span> })
+  .<span class="fn">toBuffer</span>();</td><td class="ann key">sharp is a C++ binding (libvips) — orders of magnitude faster than pure-JS image processing. withoutEnlargement:true prevents upscaling small images. .jpeg() standardizes format — input might be WebP or PNG. quality:85 good balance of quality vs. size.</td></tr>
+<tr><td class="ln">22</td><td class="code"><span class="kw">return</span> `data:image/jpeg;base64,${<span class="va">resized</span>.<span class="fn">toString</span>(<span class="str">"base64"</span>)}`;</td><td class="ann">Data URL format: "data:[MIME type];base64,[encoded data]". Anthropic's API expects exactly this format for inline base64 images.</td></tr>
+<tr><td class="ln">23–26</td><td class="code">} <span class="kw">catch</span> (<span class="va">err</span>) {
+  console.<span class="fn">warn</span>(<span class="str">"[imageService] Failed..."</span>, <span class="va">err</span>);
+  <span class="kw">return</span> <span class="kw2">null</span>;
+}</td><td class="ann good">Swallows any error and returns null. This is intentional — if the thumbnail fails, the recipe extraction continues without an image. Claude's text-only mode is still very accurate.</td></tr>
+</table>
+
+<div class="explain-box eb-cyan">
+  <div class="eb-title">Concept: sharp's method chain (builder pattern)</div>
+  <code>sharp(buffer).resize(...).jpeg(...).toBuffer()</code> is a builder pattern. Each method returns the same sharp instance, allowing chaining. The chain is lazy — no processing happens until <code>.toBuffer()</code>, <code>.toFile()</code>, or a pipe is triggered. This is more efficient than running multiple passes over the image data.
+</div>
+
+<div class="flow-arrow">↓ base64 string (or null) passed to claudeService ↓</div>
+
+<!-- ════════════════════════════════════════════════ claudeService.ts ═══════-->
+<div id="claude" class="file-header" style="background:var(--ai-dim);border-color:var(--ai)">
+  <div class="file-icon">🤖</div>
+  <div>
+    <div class="file-title">backend/src/services/claudeService.ts</div>
+    <div class="file-desc">The AI brain — two-stage pipeline: cheap Haiku pre-filter then full Sonnet multimodal extraction. Parses and normalizes Claude's JSON response.</div>
+  </div>
+</div>
+
+<div class="func-divider"><span class="func-name" style="background:var(--ai-dim);color:var(--ai)">NotARecipeError (custom error class)</span></div>
+<div class="func-summary">
+  <div class="fs-label">What this class does</div>
+  A typed error subclass used to signal "this video is not a recipe". The route handler catches it separately and returns a 422 status instead of a generic 500. This lets the iOS app show a specific "not a recipe" message to the user.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">7–12</td><td class="code"><span class="kw">export class</span> <span class="bi">NotARecipeError</span> <span class="kw">extends</span> <span class="bi">Error</span> {
+  <span class="fn">constructor</span>() {
+    <span class="kw">super</span>(<span class="str">"This video does not appear to be a recipe..."</span>);
+    <span class="kw">this</span>.name = <span class="str">"NotARecipeError"</span>;
+  }
+}</td><td class="ann key">Custom error allows instanceof check in routes/recipes.ts: <code>if (err instanceof NotARecipeError)</code>. Setting this.name is best practice — default would be "Error", which makes stack traces confusing.</td></tr>
+</table>
+
+<div class="func-divider"><span class="func-name" style="background:var(--ai-dim);color:var(--ai)">parseClaudeResponse(text): RawExtraction</span></div>
+<div class="func-sig"><span class="sig-mod">export</span> <span class="sig-kw">function</span> <span class="sig-fn">parseClaudeResponse</span>(
+  <span class="sig-param">text</span>: <span class="sig-type">string</span>
+): <span class="sig-ret">RawExtraction</span></div>
+<div class="func-summary">
+  <div class="fs-label">What this function does</div>
+  Extracts JSON from Claude's response text. Claude is instructed to wrap the JSON in a code fence (```json...```) but sometimes responds with raw JSON if the fence fails. This function tries the regex first, falls back to direct JSON.parse, and throws if both fail.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">27</td><td class="code"><span class="kw">const</span> <span class="va">match</span> = text.<span class="fn">match</span>(<span class="str">/```json\s*([\s\S]*?)```/</span>);</td><td class="ann important">Regex breakdown: ``` literal backticks, json literal, \s* any whitespace including newlines, ([\s\S]*?) capture group matching ANY character (including newlines) lazily, ``` closing backticks. [\s\S]* is the standard JS way to match "any char including newline" since . doesn't match \n by default.</td></tr>
+<tr><td class="ln">28–35</td><td class="code"><span class="kw">if</span> (!match) {
+  <span class="kw">try</span> { <span class="kw">return</span> <span class="bi">JSON</span>.<span class="fn">parse</span>(<span class="va">text</span>); }
+  <span class="kw">catch</span> { <span class="kw">throw new</span> <span class="bi">Error</span>(<span class="str">"Claude response did not contain valid JSON"</span>); }
+}
+<span class="kw">return</span> <span class="bi">JSON</span>.<span class="fn">parse</span>(<span class="va">match</span>[<span class="num">1</span>]);</td><td class="ann">match[0] = entire match including backticks. match[1] = first capture group = just the JSON text. Two-level fallback: regex first, then raw parse, then throw.</td></tr>
+</table>
+
+<div class="func-divider"><span class="func-name" style="background:var(--ai-dim);color:var(--ai)">isRecipeVideo(metadata): Promise&lt;boolean&gt;</span></div>
+<div class="func-sig"><span class="sig-kw">async function</span> <span class="sig-fn">isRecipeVideo</span>(
+  <span class="sig-param">metadata</span>: <span class="sig-type">VideoMetadata</span>
+): <span class="sig-ret">Promise&lt;boolean&gt;</span>  <span class="sig-cm">// private — not exported</span></div>
+<div class="func-summary">
+  <div class="fs-label">What this function does</div>
+  The cheap gatekeeper. Sends video title and first 500 characters of the caption to <strong>claude-haiku-4-5</strong> — the fastest, cheapest Claude model — with a YES/NO question. Max 5 tokens. Returns true only if the response starts with "YES". Throws nothing — any error from Claude would propagate up.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">38–44</td><td class="code"><span class="kw">const</span> <span class="va">prompt</span> = `<span class="str">Video title: ${metadata.title}
+Creator: ${metadata.uploader}
+Caption: ${metadata.description.slice(0, 500)}
+
+Does this video teach the viewer how to cook...?
+Reply with only YES or NO.</span>`;</td><td class="ann key">slice(0, 500) limits caption to 500 chars — enough context without burning input tokens. The question is phrased to check "teaches how to cook" — correctly rejects restaurant visit videos, food reviews, mukbangs that don't give instructions.</td></tr>
+<tr><td class="ln">46–52</td><td class="code"><span class="kw">const</span> <span class="va">response</span> = <span class="kw">await</span> client.messages.<span class="fn">create</span>({
+  model: <span class="str">"claude-haiku-4-5-20251001"</span>,
+  max_tokens: <span class="num">5</span>,
+  system: <span class="str">"You classify social media videos. Reply with only YES or NO."</span>,
+  messages: [{ role: <span class="str">"user"</span>, content: <span class="va">prompt</span> }],
+});</td><td class="ann important">max_tokens:5 caps the response at 5 tokens (~3-4 words). More than enough for "YES" or "NO". Makes this call extremely cheap — Haiku is already the cheapest model, and 5 tokens costs fractions of a cent.</td></tr>
+<tr><td class="ln">53–58</td><td class="code"><span class="kw">const</span> <span class="va">answer</span> = response.content[<span class="num">0</span>].type === <span class="str">"text"</span>
+  ? response.content[<span class="num">0</span>].text.<span class="fn">trim</span>().<span class="fn">toUpperCase</span>()
+  : <span class="str">"NO"</span>;
+<span class="kw">return</span> <span class="va">answer</span>.<span class="fn">startsWith</span>(<span class="str">"YES"</span>);</td><td class="ann warn">content[0].type check required by Anthropic SDK — response can contain text or tool_use blocks. .toUpperCase() normalizes "yes", "Yes", "YES". .startsWith("YES") handles edge case where model responds "YES, this is a recipe..." despite instructions.</td></tr>
+</table>
+
+<div class="func-divider"><span class="func-name" style="background:var(--ai-dim);color:var(--ai)">extractRecipeFromVideo(metadata, thumbnailBase64)</span></div>
+<div class="func-sig"><span class="sig-mod">export</span> <span class="sig-kw">async function</span> <span class="sig-fn">extractRecipeFromVideo</span>(
+  <span class="sig-param">metadata</span>: <span class="sig-type">VideoMetadata</span>,
+  <span class="sig-param">thumbnailBase64</span>: <span class="sig-type">string | null</span>
+): <span class="sig-ret">Promise&lt;Omit&lt;RecipeResponse,
+  "source_url" | "platform" | "thumbnail_url" | "thumbnail_base64" | "raw_caption"
+&gt;&gt;</span></div>
+<div class="func-summary">
+  <div class="fs-label">What this function does</div>
+  The main extraction function. First calls <strong>isRecipeVideo()</strong> as a guard. If it passes, calls <strong>buildExtractionPrompt()</strong> to assemble the multimodal prompt, then invokes <strong>claude-sonnet-4-6</strong> to extract the full recipe. Parses, validates, and normalizes Claude's JSON response into a typed object.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">66</td><td class="code"><span class="kw">const</span> <span class="va">isRecipe</span> = <span class="kw">await</span> <span class="fn">isRecipeVideo</span>(<span class="va">metadata</span>);
+<span class="kw">if</span> (!<span class="va">isRecipe</span>) { <span class="kw">throw new</span> <span class="fn">NotARecipeError</span>(); }</td><td class="ann important">Pre-filter BEFORE the expensive Sonnet call. Haiku costs ~10x less than Sonnet. This gate saves ~90% of cost for non-recipe videos (fitness, travel, comedy etc.).</td></tr>
+<tr><td class="ln">71–78</td><td class="code"><span class="kw">const</span> <span class="va">response</span> = <span class="kw">await</span> client.messages.<span class="fn">create</span>({
+  model: <span class="str">"claude-sonnet-4-6"</span>,
+  max_tokens: <span class="num">4096</span>,
+  system,
+  messages,
+});</td><td class="ann key">claude-sonnet-4-6 is the best multimodal model here. max_tokens:4096 allows long ingredient lists and many steps. system and messages come from buildExtractionPrompt() — separate to keep concerns clean.</td></tr>
+<tr><td class="ln">90–95</td><td class="code"><span class="kw">const</span> <span class="va">ingredients</span>: <span class="bi">Ingredient</span>[] = (<span class="va">extracted</span>.ingredients ?? []).<span class="fn">map</span>((<span class="va">ing</span>) =&gt; ({
+  name: ing.name ?? <span class="str">"Unknown ingredient"</span>,
+  quantity: ing.quantity ?? <span class="kw2">null</span>,
+  unit: ing.unit ?? <span class="kw2">null</span>,
+  notes: ing.notes ?? <span class="kw2">null</span>,
+}));</td><td class="ann">?? null coalescing normalizes missing fields. Even if Claude omits a field, the object always has all 4 keys — prevents downstream undefined access. "Unknown ingredient" fallback for name (the only required field).</td></tr>
+<tr><td class="ln">103–105</td><td class="code"><span class="kw">const</span> <span class="va">confidence</span> = <span class="kw">typeof</span> extracted.confidence === <span class="str">"number"</span>
+  ? <span class="bi">Math</span>.<span class="fn">max</span>(<span class="num">0</span>, <span class="bi">Math</span>.<span class="fn">min</span>(<span class="num">1</span>, extracted.confidence))
+  : <span class="num">0.5</span>;</td><td class="ann good">Clamps confidence to [0, 1] even if Claude hallucinates a value outside range. typeof check ensures we don't call Math.max on a string. Defaults to 0.5 (neutral) if missing.</td></tr>
+</table>
+
+<div class="explain-box eb-yellow">
+  <div class="eb-title">Important: Two-stage AI cost optimization pattern</div>
+  Stage 1 (Haiku, ~$0.0003): "Is this a recipe? YES/NO" — runs on title + 500 chars of caption only. Stage 2 (Sonnet, ~$0.003): Full multimodal extraction — runs only if Stage 1 says YES. For a typical app with 50% non-recipe shares, this halves the AI cost without reducing output quality. The pattern generalizes: use a cheap classifier to gate an expensive generator.
+</div>
+
+<!-- ════════════════════════════════════════════════ promptBuilder.ts ═══════-->
+<div id="prompt" class="file-header" style="background:var(--ai-dim);border-color:var(--ai)">
+  <div class="file-icon">📝</div>
+  <div>
+    <div class="file-title">backend/src/utils/promptBuilder.ts</div>
+    <div class="file-desc">Assembles the system prompt, JSON schema, and multimodal user message for Claude's recipe extraction call.</div>
+  </div>
+</div>
+
+<div class="func-divider"><span class="func-name" style="background:var(--ai-dim);color:var(--ai)">SYSTEM_PROMPT + RECIPE_SCHEMA (constants)</span></div>
+<div class="func-summary">
+  <div class="fs-label">What these constants do</div>
+  <strong>SYSTEM_PROMPT</strong> is the instruction set that shapes Claude's entire behavior — it defines what Claude is, when to reject input, and exactly how to format output. <strong>RECIPE_SCHEMA</strong> is a JSON template that shows Claude the exact structure expected, field by field, with type annotations as strings.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">4–18</td><td class="code"><span class="kw">const</span> <span class="va">SYSTEM_PROMPT</span> = `<span class="str">You are a culinary AI assistant...
+CRITICAL RULE — set "is_recipe": false...
+Only set "is_recipe": true if the video teaches...
+...
+Respond ONLY with a valid JSON object wrapped in \`\`\`json ... \`\`\`</span>`</td><td class="ann important">Every sentence in SYSTEM_PROMPT serves a purpose: the culinary role focuses responses; the CRITICAL RULE prevents false positives; the code fence instruction forces parseable output. See deep-dive-llm.html for sentence-by-sentence analysis.</td></tr>
+<tr><td class="ln">20–43</td><td class="code"><span class="kw">const</span> <span class="va">RECIPE_SCHEMA</span> = `{
+  <span class="str">"title"</span>: <span class="str">"string — clean recipe name..."</span>,
+  <span class="str">"confidence"</span>: <span class="str">"float 0.0–1.0 — your confidence..."</span>
+}`</td><td class="ann key">Using a string schema (not a JSON Schema or Zod type) is intentional — Claude understands natural language descriptions like "integer | null" better than JSONSchema "type": ["integer", "null"]. The schema acts as few-shot examples of what valid values look like.</td></tr>
+</table>
+
+<div class="func-divider"><span class="func-name" style="background:var(--ai-dim);color:var(--ai)">buildExtractionPrompt(metadata, thumbnailBase64)</span></div>
+<div class="func-sig"><span class="sig-mod">export</span> <span class="sig-kw">function</span> <span class="sig-fn">buildExtractionPrompt</span>(
+  <span class="sig-param">metadata</span>: <span class="sig-type">VideoMetadata</span>,
+  <span class="sig-param">thumbnailBase64</span>: <span class="sig-type">string | null</span>
+): <span class="sig-ret">{ system: string; messages: Anthropic.MessageParam[] }</span></div>
+<div class="func-summary">
+  <div class="fs-label">What this function does</div>
+  Constructs the full API payload for the Anthropic messages.create() call. Returns <code>{system, messages}</code> where messages contains a multimodal user message: the text prompt first, then optionally the image block, then a clarification text about the image.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">49–52</td><td class="code"><span class="kw">const</span> <span class="va">captionText</span> =
+  metadata.description.<span class="fn">trim</span>().length &gt; <span class="num">0</span>
+    ? metadata.description.<span class="fn">slice</span>(<span class="num">0</span>, <span class="num">3000</span>)
+    : <span class="str">"(no caption available)"</span>;</td><td class="ann">3000 chars ≈ 750 tokens — generous enough for most recipe captions but keeps cost controlled. Explicit "(no caption available)" tells Claude explicitly that text is absent, rather than sending an empty string that could confuse it.</td></tr>
+<tr><td class="ln">69–73</td><td class="code"><span class="kw">if</span> (<span class="va">thumbnailBase64</span>) {
+  <span class="kw">const</span> <span class="va">base64Data</span> = thumbnailBase64
+    .<span class="fn">replace</span>(<span class="str">/^data:image\/\w+;base64,/</span>, <span class="str">""</span>);
+  userContent.<span class="fn">push</span>({ type: <span class="str">"image"</span>, source: { type: <span class="str">"base64"</span>, ... } });</td><td class="ann important">Anthropic's API requires the base64 data WITHOUT the "data:image/jpeg;base64," prefix — just the raw base64 characters. The regex strips the data URI prefix. This is a common gotcha when adapting browser-style data URLs to API calls.</td></tr>
+<tr><td class="ln">84–86</td><td class="code">userContent.<span class="fn">push</span>({ type: <span class="str">"text"</span>,
+  text: <span class="str">"The image above is a thumbnail..."</span>
+});</td><td class="ann good">Adding an explanatory text after the image improves Claude's attention to the image. Without it, Claude may not reference the image when making decisions. "Use it to help identify the dish if the caption is sparse" guides when the image is most useful.</td></tr>
+</table>
+
+<div class="explain-box eb-blue">
+  <div class="eb-title">Pattern: Multimodal message construction (image + text interleaving)</div>
+  Anthropic's messages API supports interleaved content blocks: <code>[{type:"text",...}, {type:"image",...}, {type:"text",...}]</code>. Text before the image provides context; the image is the visual input; text after guides interpretation. This ordering mirrors how humans read — "here's the context, here's the visual, here's what I need from it."
+</div>
+
+<div class="flow-arrow">↓ Claude returns JSON → imageGenerationService called → DB save → response ↓</div>
+
+<!-- ════════════════════════════════════════════════ imageGenerationService.ts ═══════-->
+<div id="imggen" class="file-header" style="background:var(--cyan-dim);border-color:var(--cyan)">
+  <div class="file-icon">🎨</div>
+  <div>
+    <div class="file-title">backend/src/services/imageGenerationService.ts</div>
+    <div class="file-desc">Calls Google Gemini 2.5 Flash to generate a Miyazaki-style food illustration for the extracted recipe title.</div>
+  </div>
+</div>
+
+<div class="func-divider"><span class="func-name" style="background:var(--cyan-dim);color:var(--cyan)">generateRecipeImage(recipeTitle): Promise&lt;string|null&gt;</span></div>
+<div class="func-sig"><span class="sig-mod">export</span> <span class="sig-kw">async function</span> <span class="sig-fn">generateRecipeImage</span>(
+  <span class="sig-param">recipeTitle</span>: <span class="sig-type">string</span>
+): <span class="sig-ret">Promise&lt;string | null&gt;</span></div>
+<div class="func-summary">
+  <div class="fs-label">What this function does</div>
+  Generates a Studio Ghibli / Miyazaki-style watercolor illustration of the recipe dish. Uses Google's Gemini multimodal generation API. Completely optional — returns null if GEMINI_API_KEY is missing or generation fails, and the recipe flow continues normally.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">4–9</td><td class="code"><span class="kw">const</span> <span class="va">MODEL</span> = <span class="str">"gemini-2.5-flash-image"</span>;
+<span class="kw">const</span> <span class="va">STYLE_SUFFIX</span> = <span class="str">"Studio Ghibli / Hayao Miyazaki anime art style.
+Soft watercolor textures, warm golden light, lush natural colors,
+cozy and inviting atmosphere, detailed food illustration,
+hand-painted aesthetic, vibrant and appetizing. No text, no people, food only."</span>;</td><td class="ann key">Style prompt as a constant — consistent across all recipes. "No text, no people, food only" is critical: without it, Gemini might generate text labels or chefs which would look wrong in the app.</td></tr>
+<tr><td class="ln">21</td><td class="code"><span class="kw">const</span> <span class="va">prompt</span> = `A beautifully illustrated dish of "${<span class="va">recipeTitle</span>}". ${<span class="va">STYLE_SUFFIX</span>}`;</td><td class="ann">Template literal interpolates the recipe title. Quotes around ${recipeTitle} help Gemini treat it as a dish name, not a directive.</td></tr>
+<tr><td class="ln">30–37</td><td class="code"><span class="kw">for</span> (<span class="kw">const</span> <span class="va">part</span> <span class="kw">of</span> response.candidates?.[<span class="num">0</span>]?.content?.parts ?? []) {
+  <span class="kw">if</span> (<span class="va">part</span>.inlineData?.data) {
+    <span class="kw">const</span> <span class="va">mime</span> = <span class="va">part</span>.inlineData.mimeType ?? <span class="str">"image/png"</span>;
+    <span class="kw">return</span> `data:${<span class="va">mime</span>};base64,${<span class="va">part</span>.inlineData.data}`;
+  }
+}</td><td class="ann important">Gemini returns multiple content parts — some text, some images. Loop looks for the first part with inlineData.data (the base64 image). Optional chaining ?. handles missing candidates gracefully — returns from loop without throwing.</td></tr>
+</table>
+
+<!-- ════════════════════════════════════════════════ recipeService.ts ═══════-->
+<div id="recipesvc" class="file-header" style="background:var(--green-dim);border-color:var(--green)">
+  <div class="file-icon">🗄️</div>
+  <div>
+    <div class="file-title">backend/src/services/recipeService.ts</div>
+    <div class="file-desc">Prisma ORM operations for recipes — create, read, delete with ownership checks.</div>
+  </div>
+</div>
+
+<div class="func-divider"><span class="func-name" style="background:var(--green-dim);color:var(--green)">saveRecipeForUser(userId, recipe)</span></div>
+<div class="func-sig"><span class="sig-mod">export</span> <span class="sig-kw">async function</span> <span class="sig-fn">saveRecipeForUser</span>(
+  <span class="sig-param">userId</span>: <span class="sig-type">string</span>,
+  <span class="sig-param">recipe</span>: <span class="sig-type">RecipeResponse</span>
+): <span class="sig-ret">Promise&lt;{ id: string }&gt;</span></div>
+<div class="func-summary">
+  <div class="fs-label">What this function does</div>
+  Persists a fully-extracted recipe to PostgreSQL using Prisma's nested write syntax. Creates one Recipe row plus N Ingredient rows and M Step rows, all in a single database transaction. Called non-blocking (fire-and-forget) so the HTTP response isn't delayed by the DB write.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">8–42</td><td class="code">prisma.recipe.<span class="fn">create</span>({
+  data: {
+    userId, title, platform, sourceUrl,
+    ingredients: {
+      <span class="fn">create</span>: recipe.ingredients.<span class="fn">map</span>((<span class="va">ing</span>, <span class="va">i</span>) =&gt; ({
+        ...ing, sortOrder: <span class="va">i</span>
+      })),
+    },
+    steps: { <span class="fn">create</span>: recipe.steps.<span class="fn">map</span>((<span class="va">step</span>) =&gt; ({...})) },
+  },
+  select: { id: <span class="kw2">true</span> },
+})</td><td class="ann key">Prisma nested write — ingredients.create and steps.create run atomically with the parent recipe.create. If the DB is down, all three tables fail together (no orphaned ingredients). select:{id:true} returns only the ID — avoids re-fetching the large recipe payload.</td></tr>
+<tr><td class="ln">26</td><td class="code">sortOrder: <span class="va">i</span>,</td><td class="ann">Array index used as sortOrder — preserves the order Claude returned ingredients in. PostgreSQL doesn't guarantee row insertion order, so explicit sortOrder is required for consistent display.</td></tr>
+</table>
+
+<div class="func-divider"><span class="func-name" style="background:var(--green-dim);color:var(--green)">deleteRecipeForUser(recipeId, userId): Promise&lt;boolean&gt;</span></div>
+<div class="func-sig"><span class="sig-mod">export</span> <span class="sig-kw">async function</span> <span class="sig-fn">deleteRecipeForUser</span>(
+  <span class="sig-param">recipeId</span>: <span class="sig-type">string</span>,
+  <span class="sig-param">userId</span>: <span class="sig-type">string</span>
+): <span class="sig-ret">Promise&lt;boolean&gt;</span></div>
+<div class="func-summary">
+  <div class="fs-label">What this function does</div>
+  Deletes a recipe — but only if it belongs to the requesting user. This ownership check is a security invariant: without it, any user could delete any other user's recipe by guessing the cuid. Returns false (not throws) if not found, letting the route return 404.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">57–65</td><td class="code"><span class="kw">const</span> <span class="va">recipe</span> = <span class="kw">await</span> prisma.recipe.<span class="fn">findFirst</span>({
+  where: { id: recipeId, userId },
+  select: { id: <span class="kw2">true</span> },
+});
+<span class="kw">if</span> (!<span class="va">recipe</span>) <span class="kw">return false</span>;
+<span class="kw">await</span> prisma.recipe.<span class="fn">delete</span>({ where: { id: recipeId } });</td><td class="ann important">findFirst with BOTH id AND userId — this is a double-key ownership check. Prisma's onDelete: Cascade on Ingredient and Step means deleting the Recipe automatically deletes all child rows. No manual cascade needed.</td></tr>
+</table>
+
+<!-- ════════════════════════════════════════════════ userService.ts ═══════-->
+<div id="usersvc" class="file-header" style="background:var(--blue-dim);border-color:var(--blue)">
+  <div class="file-icon">👤</div>
+  <div>
+    <div class="file-title">backend/src/services/userService.ts</div>
+    <div class="file-desc">Google OAuth token verification, user upsert, and JWT signing — the complete authentication flow.</div>
+  </div>
+</div>
+
+<div class="func-divider"><span class="func-name" style="background:var(--blue-dim);color:var(--blue)">verifyGoogleToken(idToken, displayName?)</span></div>
+<div class="func-sig"><span class="sig-mod">export</span> <span class="sig-kw">async function</span> <span class="sig-fn">verifyGoogleToken</span>(
+  <span class="sig-param">idToken</span>: <span class="sig-type">string</span>,
+  <span class="sig-param">displayName</span>?: <span class="sig-type">string</span>
+): <span class="sig-ret">Promise&lt;GoogleUserInfo&gt;</span></div>
+<div class="func-summary">
+  <div class="fs-label">What this function does</div>
+  Validates the Google ID token sent by the iOS app after the user signs in. Uses Google's official <code>google-auth-library</code> to cryptographically verify the token. Returns the user's Google ID, email, name, and avatar URL.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">16–19</td><td class="code"><span class="kw">const</span> <span class="va">audiences</span> = [
+  process.env.<span class="va">GOOGLE_CLIENT_ID</span>,
+  process.env.<span class="va">GOOGLE_IOS_CLIENT_ID</span>,
+].<span class="fn">filter</span>(<span class="bi">Boolean</span>) <span class="kw">as</span> <span class="bi">string</span>[];</td><td class="ann important">Multiple audience IDs — the Web client ID and the iOS client ID. Google ID tokens include an "aud" field and verifyIdToken checks it against this list. Without the iOS client ID here, tokens from the iOS app would be rejected.</td></tr>
+<tr><td class="ln">21–24</td><td class="code"><span class="kw">const</span> <span class="va">ticket</span> = <span class="kw">await</span> googleClient.<span class="fn">verifyIdToken</span>({
+  idToken, audience: <span class="va">audiences</span>,
+});
+<span class="kw">const</span> <span class="va">payload</span> = ticket.<span class="fn">getPayload</span>();</td><td class="ann key">verifyIdToken fetches Google's public keys from their JWKS endpoint, verifies the token's RS256 signature, and checks expiry. This prevents forged tokens. getPayload() returns the decoded JWT claims.</td></tr>
+<tr><td class="ln">30–34</td><td class="code"><span class="kw">return</span> {
+  googleId: payload.sub,
+  email: payload.email,
+  name: payload.name ?? <span class="va">displayName</span> ?? payload.email,
+  avatarUrl: payload.picture ?? <span class="kw2">null</span>,
+};</td><td class="ann">payload.sub is Google's stable user identifier ("subject"). Falls back to displayName sent by iOS, then email if no name available. picture may be absent for some Google accounts.</td></tr>
+</table>
+
+<div class="func-divider"><span class="func-name" style="background:var(--blue-dim);color:var(--blue)">findOrCreateUser(info) — Prisma upsert</span></div>
+<div class="func-sig"><span class="sig-mod">export</span> <span class="sig-kw">async function</span> <span class="sig-fn">findOrCreateUser</span>(
+  <span class="sig-param">info</span>: <span class="sig-type">GoogleUserInfo</span>
+): <span class="sig-ret">Promise&lt;User&gt;</span></div>
+<div class="func-summary">
+  <div class="fs-label">What this function does</div>
+  Creates a new user or updates an existing one in PostgreSQL, keyed by googleId. The "upsert" operation is atomic — no race condition between "does user exist?" and "create user". This is the idempotent user registration pattern.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">38–52</td><td class="code">prisma.user.<span class="fn">upsert</span>({
+  where: { googleId: info.googleId },
+  update: { email, name, avatarUrl },
+  create: { googleId, email, name, avatarUrl },
+});</td><td class="ann key">Prisma upsert: if a row with matching googleId exists → UPDATE; if not → INSERT. Atomic at the DB level. The update block refreshes email/name/avatarUrl — these can change if the user updates their Google profile.</td></tr>
+</table>
+
+<div class="func-divider"><span class="func-name" style="background:var(--blue-dim);color:var(--blue)">signJwt(userId, email): string</span></div>
+<div class="func-sig"><span class="sig-mod">export</span> <span class="sig-kw">function</span> <span class="sig-fn">signJwt</span>(
+  <span class="sig-param">userId</span>: <span class="sig-type">string</span>,
+  <span class="sig-param">email</span>: <span class="sig-type">string</span>
+): <span class="sig-ret">string</span>  <span class="sig-cm">// returns signed HS256 JWT</span></div>
+<table class="code-table">
+<tr><td class="ln">54–58</td><td class="code"><span class="kw">return</span> jwt.<span class="fn">sign</span>(<span class="va">payload</span>, process.env.<span class="va">JWT_SECRET</span>!, {
+  expiresIn: (process.env.<span class="va">JWT_EXPIRES_IN</span> ?? <span class="str">"30d"</span>) <span class="kw">as</span> jwt.SignOptions[<span class="str">"expiresIn"</span>],
+});</td><td class="ann important">JWT_SECRET should be 64+ random bytes (see .env.example). Default 30-day expiry balances security and UX — users don't get logged out frequently. The type cast is needed because the env var is a string but expiresIn expects a specific type union.</td></tr>
+</table>
+
+<!-- ════════════════════════════════════════════════ routes ═══════-->
+<div id="routes" class="file-header" style="background:var(--green-dim);border-color:var(--green)">
+  <div class="file-icon">🛣️</div>
+  <div>
+    <div class="file-title">backend/src/routes/ (recipes, auth, userRecipes, health)</div>
+    <div class="file-desc">Express route handlers — orchestrate services, handle errors, and format HTTP responses.</div>
+  </div>
+</div>
+
+<div class="func-divider"><span class="func-name" style="background:var(--green-dim);color:var(--green)">routes/recipes.ts — POST /api/v1/extract</span></div>
+<div class="func-sig"><span class="sig-cm">// route handler — not a named function, registered as:</span>
+router.<span class="sig-fn">post</span>(<span class="sig-param">"/extract"</span>, <span class="sig-fn">requireAuth</span>, <span class="sig-kw">async</span> (
+  <span class="sig-param">req</span>: <span class="sig-type">Request</span>,
+  <span class="sig-param">res</span>: <span class="sig-type">Response</span>
+) =&gt; <span class="sig-ret">Promise&lt;void&gt;</span>)</div>
+<div class="func-summary">
+  <div class="fs-label">What this route does</div>
+  The main endpoint — orchestrates all 4 pipeline stages (yt-dlp → image → Claude → Gemini) and saves to DB. Each stage is wrapped in its own try/catch with specific HTTP error codes. The DB save is fire-and-forget (non-blocking) so the response returns immediately.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">13</td><td class="code">router.<span class="fn">post</span>(<span class="str">"/extract"</span>, <span class="va">requireAuth</span>, <span class="kw">async</span> (<span class="va">req</span>, <span class="va">res</span>) =&gt; {</td><td class="ann">requireAuth is the second argument — Express middleware chain. It runs before the async handler. If auth fails, handler never runs.</td></tr>
+<tr><td class="ln">22–29</td><td class="code"><span class="kw">if</span> (!url.<span class="fn">startsWith</span>(<span class="str">"http"</span>)) {
+  <span class="kw">const</span> <span class="va">extracted</span> = <span class="fn">extractUrlFromText</span>(<span class="va">url</span>);
+  <span class="kw">if</span> (!<span class="va">extracted</span>) {
+    res.<span class="fn">status</span>(<span class="num">422</span>).<span class="fn">json</span>({...});
+    <span class="kw">return</span>;
+  }
+  <span class="va">url</span> = <span class="va">extracted</span>;
+}</td><td class="ann">Handles TikTok's iOS share behavior: when you tap "Share" on TikTok, the clipboard gets "Check out @creator! https://vm.tiktok.com/ABC". This block strips the surrounding text.</td></tr>
+<tr><td class="ln">82</td><td class="code"><span class="kw">const</span> <span class="va">generatedImage</span> = <span class="kw">await</span> <span class="fn">generateRecipeImage</span>(<span class="va">recipeData</span>.title);</td><td class="ann key">generateRecipeImage is awaited — response waits for the Miyazaki image. This could be made non-blocking too, but then the iOS client would need to poll for the image separately.</td></tr>
+<tr><td class="ln">88–90</td><td class="code">thumbnail_base64: <span class="va">generatedImage</span> ?? <span class="va">thumbnailBase64</span>,</td><td class="ann important">Priority: Miyazaki illustration > original thumbnail > null. ?? falls back to thumbnailBase64 if image generation failed (GEMINI_API_KEY not set, or generation error). iOS always shows something.</td></tr>
+<tr><td class="ln">94</td><td class="code"><span class="fn">saveRecipeForUser</span>(<span class="va">req</span>.user!.userId, <span class="va">responsePayload</span>).<span class="fn">catch</span>(...);</td><td class="ann warn">No await — fire-and-forget DB write. Response is sent before DB completes. Risk: if process crashes immediately after res.json(), the recipe is lost. Acceptable tradeoff for response speed. The non-null ! on req.user is safe because requireAuth guarantees it's set.</td></tr>
+</table>
+
+<!-- ════════════════════════════════════════════════ types ═══════-->
+<div id="types" class="file-header" style="background:#1c2128;border-color:var(--muted)">
+  <div class="file-icon">📐</div>
+  <div>
+    <div class="file-title">backend/src/types/ (request.ts, response.ts)</div>
+    <div class="file-desc">TypeScript interface definitions — shared contracts between frontend, backend, and the database layer.</div>
+  </div>
+</div>
+
+<div class="func-divider"><span class="func-name" style="background:#1c2128;color:var(--muted)">types/response.ts — RecipeResponse, VideoMetadata, Ingredient, RecipeStep</span></div>
+<div class="func-summary">
+  <div class="fs-label">What these types do</div>
+  <strong>VideoMetadata</strong> is the internal type for yt-dlp output — passed between videoExtractor → imageService → claudeService. <strong>RecipeResponse</strong> is the external API contract — what the iOS app receives. Both types use camelCase internally; the API serializes to snake_case for the iOS decoder.
+</div>
+
+<table class="code-table">
+<tr><td class="ln">1–6</td><td class="code"><span class="kw">export interface</span> <span class="bi">Ingredient</span> {
+  name: <span class="bi">string</span>;
+  quantity: <span class="bi">string</span> | <span class="kw2">null</span>;
+  unit: <span class="bi">string</span> | <span class="kw2">null</span>;
+  notes: <span class="bi">string</span> | <span class="kw2">null</span>;
+}</td><td class="ann">All fields except name are nullable — Claude may not extract them if they're not in the video. Nullable vs optional (?) matters: null means "no value", optional means "key may be absent".</td></tr>
+<tr><td class="ln">24</td><td class="code">difficulty: <span class="str">"easy"</span> | <span class="str">"medium"</span> | <span class="str">"hard"</span> | <span class="kw2">null</span>;</td><td class="ann key">Union literal type — TypeScript enforces Claude's response is one of the three allowed strings. Maps to a string column in PostgreSQL (Prisma doesn't have an enum for this).</td></tr>
+</table>
+
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:13px">
+  <a href="index.html">← Study Kit Hub</a> &nbsp;·&nbsp; RecipeWizard Code Walkthrough
+</footer>
+</body>
+</html>

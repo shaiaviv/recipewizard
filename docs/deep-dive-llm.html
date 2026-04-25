@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deep Dive: LLM Prompts — RecipeWizard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--green:#3fb950;--green-dim:#1a3a20;--blue:#58a6ff;--blue-dim:#0d2a4a;--orange:#d29922;--orange-dim:#3a2a00;--purple:#bc8cff;--purple-dim:#2d1f4a;--red:#f85149;--red-dim:#3a1010;--yellow:#e3b341;--yellow-dim:#3a2e00;--cyan:#39c5cf;--cyan-dim:#0d3038;--ai:#e879f9;--ai-dim:#3a1050}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Heebo',sans-serif;line-height:1.6}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+nav{position:sticky;top:0;background:rgba(13,17,23,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);z-index:100;padding:0 24px;height:52px;display:flex;align-items:center;gap:24px}
+.logo{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:14px}
+.nav-links{display:flex;gap:16px;margin-left:auto;flex-wrap:wrap}
+.nav-links a{font-size:12px;color:var(--muted)}
+.nav-links a:hover{color:var(--text);text-decoration:none}
+.container{max-width:1000px;margin:0 auto;padding:32px 24px}
+h1{font-size:28px;font-weight:900;margin-bottom:8px}
+h2{font-size:20px;font-weight:700;margin:40px 0 16px}
+code{font-family:'JetBrains Mono',monospace;font-size:.88em;background:var(--surface2);padding:1px 5px;border-radius:4px}
+section{margin:48px 0}
+.section-title{font-size:22px;font-weight:700;margin-bottom:24px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+/* Annotated prompt */
+.prompt-box{background:#010409;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:16px 0}
+.prompt-bar{background:var(--surface2);border-bottom:1px solid var(--border);padding:10px 18px;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--muted)}
+.prompt-table{width:100%;border-collapse:collapse}
+.prompt-table td{vertical-align:top;padding:8px 16px;border-bottom:1px solid rgba(48,54,61,.4)}
+.prompt-table tr:hover td{background:rgba(28,33,40,.5)}
+.pt-line{font-family:'JetBrains Mono',monospace;font-size:12px;color:#e6edf3;white-space:pre-wrap;max-width:420px}
+.pt-ann{font-size:12.5px;color:var(--text);border-left:3px solid transparent;padding-left:12px;line-height:1.65}
+.pt-ann.role{border-left-color:var(--blue)}
+.pt-ann.guard{border-left-color:var(--red)}
+.pt-ann.rule{border-left-color:var(--yellow)}
+.pt-ann.output{border-left-color:var(--green)}
+.pt-ann.quality{border-left-color:var(--cyan)}
+/* Schema annotated */
+.schema-table{width:100%;border-collapse:collapse;font-size:13px}
+.schema-table th{background:var(--surface2);color:var(--muted);font-size:11px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.6px;padding:8px 12px;text-align:left;border-bottom:2px solid var(--border)}
+.schema-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+.schema-table tr:hover td{background:var(--surface)}
+.sf{font-family:'JetBrains Mono',monospace;color:var(--ai);font-size:12px}
+.st{font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px}
+/* What-if boxes */
+.whatif{border-radius:8px;padding:14px 18px;margin:8px 0;font-size:13px;line-height:1.7;border:1px solid}
+.wi-bad{background:var(--red-dim);border-color:var(--red);color:#f0b0b0}
+.wi-bad .wi-title{font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--red);margin-bottom:4px;text-transform:uppercase}
+.wi-good{background:var(--green-dim);border-color:var(--green);color:#b0d8b0}
+.wi-good .wi-title{font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--green);margin-bottom:4px;text-transform:uppercase}
+/* Haiku prompt */
+.haiku-box{background:#010409;border:1px solid var(--ai);border-radius:10px;padding:20px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.8;color:#e6edf3;white-space:pre-wrap;margin:16px 0}
+/* Explain boxes */
+.explain-box{border-radius:8px;padding:14px 18px;margin:16px 0;font-size:13px;line-height:1.7;border:1px solid}
+.explain-box .eb-title{font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;margin-bottom:8px;font-family:'JetBrains Mono',monospace}
+.eb-orange{background:var(--orange-dim);border-color:var(--orange);color:#e6d0a0}.eb-orange .eb-title{color:var(--orange)}
+.eb-cyan{background:var(--cyan-dim);border-color:var(--cyan);color:#b0e8ec}.eb-cyan .eb-title{color:var(--cyan)}
+.eb-purple{background:var(--purple-dim);border-color:var(--purple);color:#d8c4f8}.eb-purple .eb-title{color:var(--purple)}
+.eb-green{background:var(--green-dim);border-color:var(--green);color:#b0d8b8}.eb-green .eb-title{color:var(--green)}
+.eb-yellow{background:var(--yellow-dim);border-color:var(--yellow);color:#e8d490}.eb-yellow .eb-title{color:var(--yellow)}
+.eb-ai{background:var(--ai-dim);border-color:var(--ai);color:#f0c0f8}.eb-ai .eb-title{color:var(--ai)}
+/* Message structure */
+.msg-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:16px 0}
+.msg-role{background:var(--surface2);padding:8px 16px;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--muted);border-bottom:1px solid var(--border)}
+.msg-part{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px}
+.msg-part:last-child{border-bottom:none}
+.msg-type{font-size:10px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;font-weight:700;margin-bottom:4px}
+@media(max-width:768px){.prompt-table td{display:block}.pt-line{max-width:100%}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">← RecipeWizard Study Kit</a>
+  <div class="nav-links">
+    <a href="#haiku">Haiku Prompt</a>
+    <a href="#system">System Prompt</a>
+    <a href="#schema">Recipe Schema</a>
+    <a href="#user-msg">User Message</a>
+    <a href="#multimodal">Multimodal</a>
+    <a href="#principles">Principles</a>
+  </div>
+</nav>
+
+<div class="container">
+<h1>Deep Dive: LLM Prompts</h1>
+<p style="color:var(--muted);font-size:15px;margin-bottom:40px">Every sentence in every prompt, dissected. Why each rule exists, what breaks if you remove it, and the prompt engineering principles behind the design.</p>
+
+<!-- HAIKU PROMPT -->
+<section id="haiku">
+  <div class="section-title">⚡ The Haiku Classifier Prompt</div>
+
+  <p style="font-size:14px;color:var(--muted);margin-bottom:16px">Located in: <code>claudeService.ts → isRecipeVideo()</code></p>
+
+  <div class="haiku-box"><span style="color:var(--muted)"># System prompt:</span>
+<span style="color:var(--ai)">"You classify social media videos. Reply with only YES or NO."</span>
+
+<span style="color:var(--muted)"># User message (template):</span>
+<span style="color:#e6edf3">Video title: <span style="color:var(--cyan)">[metadata.title]</span>
+Creator: <span style="color:var(--cyan)">[metadata.uploader]</span>
+Caption (first 500 chars): <span style="color:var(--cyan)">[metadata.description.slice(0, 500) || "(none)"]</span>
+
+Does this video teach the viewer how to cook or make a recipe at home?
+Reply with only YES or NO.</span>
+
+<span style="color:var(--muted)"># Parameters:</span>
+<span style="color:#e6edf3">max_tokens: 5    <span style="color:var(--muted)"># YES = 1 token. Buffer for "YES," edge case</span></span></div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+    <div>
+      <div class="whatif"><div class="wi-title wi-bad">❌ If system prompt removed</div>Haiku defaults to a helpful assistant role and might respond with "Yes, this appears to be a cooking video! The creator shares..." — breaking the single-token YES/NO assumption in the parser.</div>
+      <div class="whatif"><div class="wi-title wi-bad">❌ If "Reply with only YES or NO" removed from user message</div>The model might respond "Based on the caption, I believe this is indeed a recipe video." — startsWith("YES") still works, but it wastes tokens and increases cost.</div>
+    </div>
+    <div>
+      <div class="whatif"><div class="wi-title wi-bad">❌ If caption truncated to 100 chars instead of 500</div>Some recipe captions start with an emoji or a tagline before the ingredient list. 100 chars might not reach the recipe content. 500 chars reliably captures the opening structure.</div>
+      <div class="whatif"><div class="wi-good">✓ Why "teaches the viewer how to...at home"</div>Explicitly excludes restaurant tours (where food is shown but not made at home), mukbangs (eating without instructions), and cooking competitions. The "at home" qualifier is critical.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SYSTEM PROMPT DISSECTION -->
+<section id="system">
+  <div class="section-title">🏛️ The System Prompt — Line by Line</div>
+  <p style="font-size:14px;color:var(--muted);margin-bottom:16px">Located in: <code>promptBuilder.ts → SYSTEM_PROMPT</code></p>
+
+  <div class="prompt-box">
+    <div class="prompt-bar">SYSTEM_PROMPT — annotated sentence by sentence</div>
+    <table class="prompt-table">
+      <tr>
+        <td class="pt-line">You are a culinary AI assistant that analyses social media video metadata.</td>
+        <td class="pt-ann role"><strong>Role assignment.</strong> "Culinary AI" anchors Claude in food/cooking domain knowledge. "Social media video metadata" sets the context — Claude should reason about TikTok/Instagram captions, not assume a formal recipe card format. Without this, Claude might apply kitchen-book recipe conventions to informal social captions.</td>
+      </tr>
+      <tr>
+        <td class="pt-line">You receive video titles, descriptions/captions, and sometimes a thumbnail image.</td>
+        <td class="pt-ann role"><strong>Input declaration.</strong> Tells Claude what data to expect and use. "Sometimes" prepares it for absent thumbnail — so it doesn't get confused when no image is provided.</td>
+      </tr>
+      <tr>
+        <td class="pt-line">Your first job is to decide: is this actually a recipe or cooking video?</td>
+        <td class="pt-ann guard"><strong>Task framing.</strong> Making this "first job" ensures Claude checks content validity before extraction. Without this, Claude might extract partial "recipe data" from a restaurant tour video.</td>
+      </tr>
+      <tr>
+        <td class="pt-line">CRITICAL RULE — set "is_recipe": false (and leave all other fields null/empty) if the video is NOT a recipe or cooking instruction.</td>
+        <td class="pt-ann guard"><strong>Primary guard rule.</strong> "CRITICAL RULE" signals high importance to Claude. The all-caps is an intentional emphasis signal in prompt engineering. The instruction to leave fields null/empty on non-recipes prevents Claude from hallucinating partial recipe data for irrelevant videos. Note: the current schema doesn't actually include is_recipe — Claude has been conditioned to throw this away and just extract (or not extract) based on this rule.</td>
+      </tr>
+      <tr>
+        <td class="pt-line">Examples of non-recipe content: travel vlogs, fitness/workout, comedy sketches, product reviews, restaurant visits without a recipe, lifestyle content, music videos, etc.</td>
+        <td class="pt-ann guard"><strong>Negative examples.</strong> Explicitly listing exclusions dramatically improves precision. Without examples, Claude might extract "recipes" from: a food tour ("we tried their famous pasta"), a mukbang, or a cooking show advertisement. Each example covers a common edge case in social media content.</td>
+      </tr>
+      <tr>
+        <td class="pt-line">Only set "is_recipe": true if the video teaches the viewer how to make or cook something at home.</td>
+        <td class="pt-ann guard"><strong>Positive definition.</strong> "Teaches" + "at home" are the two key criteria. A restaurant visit video is still cooking content but doesn't teach viewers — it's excluded. "At home" excludes professional cooking competitions where the technique isn't reproducible.</td>
+      </tr>
+      <tr>
+        <td class="pt-line">When is_recipe is true, extract all recipe information into precise JSON. Additional rules:</td>
+        <td class="pt-ann rule"><strong>Context switch signal.</strong> "When is_recipe is true" makes the extraction rules conditional, reinforcing that they only apply after the validity check.</td>
+      </tr>
+      <tr>
+        <td class="pt-line">- Be literal with measurements — never invent quantities not mentioned in the source</td>
+        <td class="pt-ann rule"><strong>Anti-hallucination rule #1.</strong> Without this, Claude might infer "2 cups flour" from context when the video only says "some flour." Food quantities matter — an incorrect measurement ruins the dish. "Literal" and "never invent" are strong directives.</td>
+      </tr>
+      <tr>
+        <td class="pt-line">- If a field is unclear or missing, use null rather than guessing</td>
+        <td class="pt-ann rule"><strong>Anti-hallucination rule #2.</strong> Allows Claude to express uncertainty explicitly via null rather than inventing a plausible value. This is critical for quantities — a guessed "2 tbsp" when the video is unclear is worse than null. The app handles null gracefully; a hallucinated measurement doesn't degrade gracefully on the stove.</td>
+      </tr>
+      <tr>
+        <td class="pt-line">- Combine duplicate ingredients (e.g. "2 cloves garlic" mentioned twice → list once)</td>
+        <td class="pt-ann quality"><strong>Deduplication rule.</strong> Social media captions often mention the same ingredient multiple times (in the ingredient list and in the instructions). Without this rule, the ingredient list would have duplicates. The example makes the expected behavior unambiguous.</td>
+      </tr>
+      <tr>
+        <td class="pt-line">- Steps should be complete sentences, one action per step</td>
+        <td class="pt-ann quality"><strong>Step format rule.</strong> Prevents fragmented steps like "Salt" or "High heat." Complete sentences are more useful: "Season with salt and bring to a boil." "One action per step" prevents multi-action steps that are hard to follow while cooking.</td>
+      </tr>
+      <tr>
+        <td class="pt-line">- Difficulty: "easy" (< 30 min, few ingredients), "medium" (30–60 min), "hard" (> 60 min or complex techniques)</td>
+        <td class="pt-ann quality"><strong>Difficulty calibration.</strong> Provides explicit criteria for the difficulty enum — time-based and complexity-based. Without this, Claude's difficulty assessments would be inconsistent across recipes. Matching the schema's "easy"/"medium"/"hard" enum values exactly.</td>
+      </tr>
+      <tr>
+        <td class="pt-line">- Respond ONLY with a valid JSON object wrapped in ```json ... ``` — no other text</td>
+        <td class="pt-ann output"><strong>Output format constraint.</strong> The most critical rule for parseability. Claude naturally adds preamble ("Here is the extracted recipe:") and postamble ("Let me know if you need anything else!"). These would break JSON.parse(). The code fence format allows parseClaudeResponse() to reliably extract just the JSON.</td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<!-- RECIPE SCHEMA DISSECTION -->
+<section id="schema">
+  <div class="section-title">📋 The Recipe Schema — Field by Field</div>
+  <p style="font-size:14px;color:var(--muted);margin-bottom:16px">Located in: <code>promptBuilder.ts → RECIPE_SCHEMA</code></p>
+
+  <div class="explain-box eb-ai">
+    <div class="eb-title">Design choice: String schema vs JSON Schema</div>
+    RECIPE_SCHEMA is a plain string template, not a formal JSON Schema or Zod definition. Claude understands natural language type annotations like <code>"integer | null"</code> and <code>"float 0.0–1.0"</code> better than formal schema syntax like <code>{"type": ["integer", "null"]}</code>. The string schema also serves as a few-shot example — showing Claude the exact format expected with example values inline. Using Anthropic's tool_use feature would give stronger output guarantees but requires restructuring the prompt as a tool definition.
+  </div>
+
+  <table class="schema-table">
+    <thead><tr><th>Field</th><th>Type in Schema</th><th>Why this type / Why nullable</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="sf">title</td>
+        <td class="st">string</td>
+        <td>Clean recipe name — "not the creator's name or channel" is explicit because many TikTok captions start with the creator's name. Without this instruction, Claude might return "Chef Julia's Pasta" instead of "Garlic Butter Pasta".</td>
+      </tr>
+      <tr>
+        <td class="sf">cook_time_minutes</td>
+        <td class="st">integer | null</td>
+        <td>Nullable because many recipe videos don't mention total cook time explicitly. Integer (not float) to avoid "20.5 minutes" which is unusual in recipe contexts.</td>
+      </tr>
+      <tr>
+        <td class="sf">prep_time_minutes</td>
+        <td class="st">integer | null</td>
+        <td>Nullable — even less commonly mentioned than cook time in short-form videos. The distinction between prep and cook time matters for planning.</td>
+      </tr>
+      <tr>
+        <td class="sf">servings</td>
+        <td class="st">integer | null</td>
+        <td>Nullable — often omitted in TikTok recipes. Integer is appropriate: "2.5 servings" doesn't make sense in practice.</td>
+      </tr>
+      <tr>
+        <td class="sf">difficulty</td>
+        <td class="st">"easy"|"medium"|"hard"|null</td>
+        <td>Closed enum — only these exact strings are accepted. The SYSTEM_PROMPT provides time-based criteria so difficulty is objective, not subjective. Null when the recipe can't be classified.</td>
+      </tr>
+      <tr>
+        <td class="sf">tags</td>
+        <td class="st">string[] — e.g. "salmon", "dinner", "30-minute"</td>
+        <td>Non-nullable array — always returns at least []. The examples guide Claude to return ingredient-based, meal-type, and time-based tags. Used for iOS category filtering.</td>
+      </tr>
+      <tr>
+        <td class="sf">ingredients[].name</td>
+        <td class="st">string (required)</td>
+        <td>Always present — it's the primary identifier of an ingredient. The normalization code falls back to "Unknown ingredient" if Claude somehow omits it.</td>
+      </tr>
+      <tr>
+        <td class="sf">ingredients[].quantity</td>
+        <td class="st">string | null — e.g. "2", "1/2", "a pinch"</td>
+        <td>String, not number — because quantities are often fractions ("1/2"), ranges ("2-3"), or qualitative ("a handful"). Storing as string preserves the original phrasing.</td>
+      </tr>
+      <tr>
+        <td class="sf">ingredients[].unit</td>
+        <td class="st">string | null — e.g. "cups", "tbsp", "g"</td>
+        <td>Nullable — "2 garlic cloves" has a unit, "a pinch of salt" doesn't have a discrete unit. Stored separately from quantity so the iOS app can display "500 g butter" with proper formatting.</td>
+      </tr>
+      <tr>
+        <td class="sf">ingredients[].notes</td>
+        <td class="st">string | null — e.g. "finely chopped", "room temperature"</td>
+        <td>Nullable — preparation notes are optional but valuable. Storing separately from name keeps the ingredient name clean ("garlic" not "finely chopped garlic") while preserving the preparation detail.</td>
+      </tr>
+      <tr>
+        <td class="sf">steps[].step_number</td>
+        <td class="st">integer starting at 1</td>
+        <td>"starting at 1" is explicit — prevents 0-based numbering. The normalization code uses array index + 1 as fallback if Claude returns 0-based.</td>
+      </tr>
+      <tr>
+        <td class="sf">steps[].instruction</td>
+        <td class="st">string — "complete actionable sentence"</td>
+        <td>"Actionable" means imperative voice ("Add the butter and stir") not descriptive ("The butter is added"). "Complete sentence" prevents fragments.</td>
+      </tr>
+      <tr>
+        <td class="sf">steps[].duration_minutes</td>
+        <td class="st">integer | null</td>
+        <td>Nullable — most steps don't have explicit durations. When present (e.g. "simmer for 10 minutes"), captured for the iOS timer feature.</td>
+      </tr>
+      <tr>
+        <td class="sf">confidence</td>
+        <td class="st">float 0.0–1.0</td>
+        <td>Claude's self-assessment of extraction quality. High confidence (>0.85): clear caption with all details. Low confidence (&lt;0.5): sparse caption, video relies on visual demonstration. The app could display a warning for low-confidence extractions. Clamped to [0,1] in normalization.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- USER MESSAGE STRUCTURE -->
+<section id="user-msg">
+  <div class="section-title">💬 The User Message Structure</div>
+  <p style="font-size:14px;color:var(--muted);margin-bottom:16px">Located in: <code>promptBuilder.ts → buildExtractionPrompt()</code></p>
+
+  <div class="msg-block">
+    <div class="msg-role">role: "user" — content: ContentBlockParam[]</div>
+    <div class="msg-part">
+      <div class="msg-type" style="color:var(--blue)">① text block</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;white-space:pre-wrap">Analyse this social media video and extract the recipe if it is one.
+
+Platform: <span style="color:var(--cyan)">{metadata.platform}</span>        ← "tiktok" or "instagram"
+Video Title: <span style="color:var(--cyan)">{metadata.title}</span>
+Creator: <span style="color:var(--cyan)">{metadata.uploader}</span>
+Duration: <span style="color:var(--cyan)">{metadata.duration}</span>s          ← omitted if null
+
+Caption/Description:
+---
+<span style="color:var(--cyan)">{captionText (up to 3000 chars)}</span>
+---
+
+Extract into this exact JSON schema:
+<span style="color:var(--ai)">{RECIPE_SCHEMA}</span></div>
+    </div>
+    <div class="msg-part" style="border-left:3px solid var(--orange)">
+      <div class="msg-type" style="color:var(--orange)">② image block (only if thumbnail available)</div>
+      <div style="font-size:13px;color:var(--muted)"><code>{type:"image", source:{type:"base64", media_type:"image/jpeg", data: base64Data}}</code><br><br>The base64 data URI prefix (<code>data:image/jpeg;base64,</code>) is stripped before sending — Anthropic requires raw base64 only.</div>
+    </div>
+    <div class="msg-part" style="border-left:3px solid var(--green)">
+      <div class="msg-type" style="color:var(--green)">③ text block (only if thumbnail present)</div>
+      <div style="font-size:13px;color:var(--muted)">"The image above is a thumbnail from the video. Use it to help identify the dish if the caption is sparse."<br><br>This guidance text prevents Claude from ignoring the image and tells it when/how to use it.</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px">
+    <div class="explain-box eb-yellow" style="margin:0">
+      <div class="eb-title">Why "---" around caption?</div>
+      The triple-dash separators clearly delineate where the caption starts and ends. Without them, Claude might conflate long captions with the schema instructions below. This is a common technique for separating injected user content from instructions.
+    </div>
+    <div class="explain-box eb-cyan" style="margin:0">
+      <div class="eb-title">Why include Platform?</div>
+      TikTok captions are more informal (emoji-heavy, bullet-point ingredients). Instagram captions are often longer with paragraph-format recipes. Providing the platform helps Claude calibrate its parsing heuristic for the caption structure.
+    </div>
+    <div class="explain-box eb-orange" style="margin:0">
+      <div class="eb-title">Why caption limited to 3000 chars?</div>
+      3000 chars ≈ 750 tokens. Most recipe captions are under 500 chars. 3000 is generous enough for long recipe posts while keeping input token cost controlled. Claude's recipe extraction quality doesn't meaningfully improve beyond 3000 chars of caption.
+    </div>
+  </div>
+</section>
+
+<!-- MULTIMODAL SECTION -->
+<section id="multimodal">
+  <div class="section-title">🖼️ Multimodal Design: Text + Image</div>
+
+  <div class="explain-box eb-purple">
+    <div class="eb-title">When does the thumbnail actually help?</div>
+    The thumbnail helps most when: (1) the caption is sparse ("Make this! #recipe") with no ingredient list, (2) the dish name isn't obvious from the title, (3) the presentation format (plated vs. unplated) suggests complexity. The thumbnail helps least when the caption already has a full ingredient list — Claude's text comprehension is more reliable than vision for structured data. Adding the guidance text in block ③ ("use it to help identify the dish if the caption is sparse") conditions Claude to reference the image when text is insufficient, rather than on every call.
+  </div>
+
+  <h3 style="font-size:15px;color:var(--muted);margin:24px 0 12px;font-weight:500">Multimodal message structure (Anthropic API format):</h3>
+  <div style="background:#010409;border:1px solid var(--border);border-radius:10px;padding:20px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.8;overflow-x:auto">
+<span style="color:#484f58">// What buildExtractionPrompt() returns:</span>
+{
+  <span style="color:var(--blue)">"system"</span>: <span style="color:var(--ai)">"You are a culinary AI assistant..."</span>,
+  <span style="color:var(--blue)">"messages"</span>: [
+    {
+      <span style="color:var(--blue)">"role"</span>: <span style="color:var(--ai)">"user"</span>,
+      <span style="color:var(--blue)">"content"</span>: [
+        { <span style="color:var(--blue)">"type"</span>: <span style="color:var(--ai)">"text"</span>, <span style="color:var(--blue)">"text"</span>: <span style="color:var(--ai)">"Analyse this social media video..."</span> },
+        {
+          <span style="color:var(--blue)">"type"</span>: <span style="color:var(--ai)">"image"</span>,
+          <span style="color:var(--blue)">"source"</span>: {
+            <span style="color:var(--blue)">"type"</span>: <span style="color:var(--ai)">"base64"</span>,
+            <span style="color:var(--blue)">"media_type"</span>: <span style="color:var(--ai)">"image/jpeg"</span>,
+            <span style="color:var(--blue)">"data"</span>: <span style="color:var(--ai)">"/9j/4AAQSkZJRgAB..."</span> <span style="color:#484f58">// raw base64, NO data: prefix</span>
+          }
+        },
+        { <span style="color:var(--blue)">"type"</span>: <span style="color:var(--ai)">"text"</span>, <span style="color:var(--blue)">"text"</span>: <span style="color:var(--ai)">"The image above is a thumbnail..."</span> }
+      ]
+    }
+  ]
+}</div>
+
+  <div class="explain-box eb-orange" style="margin-top:16px">
+    <div class="eb-title">⚠️ Common mistake: data URI prefix in base64</div>
+    Browser environments produce base64 as a data URI: <code>"data:image/jpeg;base64,/9j/4AAQ..."</code>. Anthropic's API requires ONLY the base64 data without the prefix: <code>"/9j/4AAQ..."</code>. The code strips it with: <code>thumbnailBase64.replace(/^data:image\/\w+;base64,/, "")</code>. Sending the full data URI would cause a 400 error from the API ("invalid base64 data").
+  </div>
+</section>
+
+<!-- PROMPT ENGINEERING PRINCIPLES -->
+<section id="principles">
+  <div class="section-title">🧠 Prompt Engineering Principles Applied</div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="explain-box eb-cyan" style="margin:0">
+      <div class="eb-title">1. Role Assignment</div>
+      "You are a culinary AI assistant" sets the persona before any task description. Models perform better when given a specific role — it activates relevant domain knowledge and establishes behavioral expectations.
+    </div>
+    <div class="explain-box eb-green" style="margin:0">
+      <div class="eb-title">2. Negative Examples</div>
+      Listing what the model should NOT do ("travel vlogs, fitness, comedy") is as important as listing what it should do. Negative constraints are often more effective than positive definitions at the boundary cases.
+    </div>
+    <div class="explain-box eb-purple" style="margin:0">
+      <div class="eb-title">3. Format Constraint</div>
+      "Respond ONLY with a valid JSON object wrapped in ```json...```" is the output format constraint. Explicit format constraints are the only reliable way to make an LLM produce machine-parseable output. The "no other text" clause is essential.
+    </div>
+    <div class="explain-box eb-yellow" style="margin:0">
+      <div class="eb-title">4. Calibrated Examples in Schema</div>
+      The RECIPE_SCHEMA includes example values: <code>"e.g. 'salmon', 'dinner', '30-minute'"</code> for tags. Examples in the schema teach the expected vocabulary and granularity — without them, Claude might return overly broad tags ("food") or overly specific ones ("garlic-and-herb-butter-pasta").
+    </div>
+    <div class="explain-box eb-orange" style="margin:0">
+      <div class="eb-title">5. Uncertainty Handling</div>
+      "If a field is unclear or missing, use null rather than guessing" tells the model how to handle uncertainty. Without this, LLMs default to plausible-sounding fabrications. Explicit null permission reduces hallucination for missing data.
+    </div>
+    <div class="explain-box eb-ai" style="margin:0">
+      <div class="eb-title">6. Self-Assessment Signal</div>
+      The <code>confidence</code> field asks Claude to report its own extraction confidence. This is useful because Claude's uncertainty correlates with actual extraction quality — low confidence reliably flags cases where the caption was sparse or ambiguous. It's free signal from the model.
+    </div>
+  </div>
+
+  <div class="explain-box eb-purple" style="margin-top:20px">
+    <div class="eb-title">What would improve this further: Anthropic Tool Use</div>
+    The current approach uses a string schema and parses Claude's text response. A more robust alternative: use Anthropic's <code>tool_use</code> feature where the schema is defined as a tool definition and Claude is forced to "call" it with valid JSON arguments. This would: (1) guarantee JSON schema compliance — no parsing needed; (2) eliminate the regex step entirely; (3) catch type errors (string where integer expected) at the API level. The migration would require restructuring the prompt as a tool definition, but the system prompt's instruction text would remain the same.
+  </div>
+</section>
+
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:13px">
+  <a href="index.html">← Study Kit Hub</a> &nbsp;·&nbsp;
+  <a href="deep-dive-claudeservice.html">← Claude Service Deep Dive</a>
+</footer>
+</body>
+</html>

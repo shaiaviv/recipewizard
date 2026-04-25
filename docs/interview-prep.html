@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interview Prep — RecipeWizard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--green:#3fb950;--green-dim:#1a3a20;--blue:#58a6ff;--blue-dim:#0d2a4a;--orange:#d29922;--orange-dim:#3a2a00;--purple:#bc8cff;--purple-dim:#2d1f4a;--red:#f85149;--red-dim:#3a1010;--yellow:#e3b341;--yellow-dim:#3a2e00;--cyan:#39c5cf;--cyan-dim:#0d3038;--ai:#e879f9;--ai-dim:#3a1050}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Heebo',sans-serif;line-height:1.6}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+nav{position:sticky;top:0;background:rgba(13,17,23,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);z-index:100;padding:0 24px;height:52px;display:flex;align-items:center;gap:24px}
+.logo{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:14px}
+.nav-links{display:flex;gap:16px;margin-left:auto;flex-wrap:wrap}
+.nav-links a{font-size:12px;color:var(--muted)}
+.nav-links a:hover{color:var(--text);text-decoration:none}
+.container{max-width:900px;margin:0 auto;padding:32px 24px}
+h1{font-size:28px;font-weight:900;margin-bottom:8px}
+code{font-family:'JetBrains Mono',monospace;font-size:.88em;background:var(--surface2);padding:1px 5px;border-radius:4px}
+section{margin:48px 0}
+.section-title{font-size:22px;font-weight:700;margin-bottom:24px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+/* Walk-through box */
+.walkthrough{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--cyan);border-radius:10px;padding:24px;font-size:15px;line-height:1.9;color:var(--text)}
+.walkthrough p+p{margin-top:14px}
+/* Q&A cards */
+.qa-list{display:flex;flex-direction:column;gap:12px}
+details{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+details[open]{border-color:var(--purple)}
+summary{cursor:pointer;padding:14px 18px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px;list-style:none;user-select:none}
+summary::before{content:'Q';background:var(--green-dim);color:var(--green);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;flex-shrink:0}
+summary::-webkit-details-marker{display:none}
+summary::after{content:'▸';margin-left:auto;color:var(--muted);transition:transform .2s}
+details[open] summary::after{transform:rotate(90deg)}
+.qa-answer{padding:0 18px 18px;font-size:14px;color:var(--text);line-height:1.8;border-top:1px solid var(--border);padding-top:14px}
+.qa-answer p+p{margin-top:10px}
+.qa-answer ul{margin:8px 0 8px 20px;display:flex;flex-direction:column;gap:4px}
+.qa-answer code{background:var(--surface2);padding:2px 6px;border-radius:4px}
+/* Code snippet blocks in QA */
+.code-block{background:#010409;border:1px solid var(--border);border-radius:8px;padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;overflow-x:auto;margin:10px 0;color:#e6edf3}
+.kw{color:#ff7b72}.fn{color:#d2a8ff}.str{color:#a5d6ff}.num{color:#79c0ff}.cm{color:#484f58;font-style:italic}.bi{color:#ffa657}
+/* Gotcha cards */
+.gotcha-list{display:flex;flex-direction:column;gap:16px}
+.gotcha{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.gotcha-code{background:#010409;padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:13px;border-bottom:1px solid var(--border);overflow-x:auto}
+.gotcha-q{padding:10px 18px;font-size:13px;font-weight:600;color:var(--yellow);background:var(--yellow-dim);border-bottom:1px solid var(--border)}
+.gotcha-a{padding:12px 18px;font-size:13px;color:var(--text);line-height:1.7}
+@media(max-width:768px){.container{padding:24px 16px}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">← RecipeWizard Study Kit</a>
+  <div class="nav-links">
+    <a href="#walkthrough">Walk-through</a>
+    <a href="#tech-q">Tech Questions</a>
+    <a href="#arch-q">Architecture</a>
+    <a href="#critical">Critical Thinking</a>
+    <a href="#gotchas">Code Gotchas</a>
+  </div>
+</nav>
+
+<div class="container">
+<h1>Interview Prep</h1>
+<p style="color:var(--muted);font-size:15px;margin-bottom:40px">Fully written answers to every likely interview question about this project. Read them out loud a few times.</p>
+
+<!-- WALKTHROUGH -->
+<section id="walkthrough">
+  <div class="section-title">🎤 "Walk me through the project"</div>
+  <div class="walkthrough">
+    <p>RecipeWizard is a full-stack iOS application that solves a specific problem: when you see a cooking recipe on TikTok or Instagram, there's no easy way to save the actual recipe with ingredients and steps — you either screenshot the video, try to remember the caption, or lose it. RecipeWizard lets you share the video directly to the app, and it automatically extracts the full structured recipe using AI.</p>
+
+    <p>The backend is a Node.js/TypeScript Express API deployed on Railway. When the iOS app shares a TikTok or Instagram URL, the backend runs a four-stage pipeline. First, it spawns <strong>yt-dlp</strong> — a command-line tool — to fetch the video's metadata without downloading any video. That gives us the title, caption, and thumbnail URL. Second, it downloads and resizes the thumbnail using <strong>sharp</strong>, a C++ image processing library, to prepare it for the AI vision call.</p>
+
+    <p>The third stage is the AI extraction, which I designed as a two-stage pipeline for cost efficiency. I first send the title and a snippet of the caption to <strong>Claude Haiku</strong> — the cheapest and fastest Claude model — with a simple YES/NO question: "Does this video teach the viewer how to cook?" This pre-filter costs fractions of a cent and blocks non-recipe content — travel vlogs, mukbangs, comedy sketches — before touching the expensive model. If Haiku says YES, I call <strong>Claude Sonnet 4.6</strong> with the full caption plus the thumbnail image, using a carefully engineered system prompt that defines the exact JSON schema I want back.</p>
+
+    <p>After extraction, there's an optional fourth stage: <strong>Gemini 2.5 Flash</strong> generates a Studio Ghibli-style watercolor illustration of the dish, which replaces the thumbnail in the app for a more consistent visual experience. Finally, everything is persisted to <strong>PostgreSQL</strong> via Prisma ORM, and the response is sent back to the iOS client.</p>
+
+    <p>Authentication uses Google Sign-In. The iOS app gets a Google ID token, sends it to the backend, which verifies it with Google's official library, upserts the user in the database, and returns a JWT with a 30-day expiry. The JWT is stored in a shared App Group UserDefaults so the Share Extension can include it in API requests even though it's a separate iOS process.</p>
+  </div>
+</section>
+
+<!-- TECH QUESTIONS -->
+<section id="tech-q">
+  <div class="section-title">🔧 Technology Questions</div>
+  <div class="qa-list">
+
+    <details>
+      <summary>What is yt-dlp and why did you use it?</summary>
+      <div class="qa-answer">
+        <p>yt-dlp is an open-source command-line tool that can extract metadata and media from over 1,000 video platforms. It's a maintained fork of youtube-dl with better support for TikTok, Instagram, and other modern platforms.</p>
+        <p>I used it for one specific feature: <code>--dump-json</code> — which tells yt-dlp to output the video's metadata as JSON and exit immediately, without downloading a single byte of video data. That gives me the title, description, thumbnail URL, uploader, duration, and platform detection in about 1–2 seconds.</p>
+        <p>The alternatives were: (1) scraping the HTML of TikTok/Instagram pages directly — fragile, breaks when they change their markup; (2) using official APIs — TikTok and Instagram have very restricted API access that doesn't include recipe data from user videos; (3) downloading the video and extracting text from frames — extremely expensive and slow. yt-dlp was the only practical path.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Why two AI models — Haiku and Sonnet?</summary>
+      <div class="qa-answer">
+        <p>It's a cost-optimization pattern I call "classifier gating." The problem is that users often share non-recipe content — they might accidentally share a fitness video, a travel vlog, or a restaurant review. Running the full claude-sonnet-4-6 extraction on those would waste money and return a confusing error.</p>
+        <p>So I added a pre-filter: claude-haiku-4-5 with <code>max_tokens: 5</code> and a YES/NO question. Haiku is roughly 10-15x cheaper than Sonnet per token, and a 5-token YES/NO response costs fractions of a cent. For a typical user who shares 50% non-recipe content, this halves the AI cost without affecting accuracy at all — the actual recipe extraction only runs on confirmed cooking videos.</p>
+        <p>The tradeoff is two sequential API calls instead of one. The latency overhead is small because Haiku responds in under a second.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>What is Prisma and why use an ORM instead of raw SQL?</summary>
+      <div class="qa-answer">
+        <p>Prisma is a TypeScript ORM that generates a fully-typed client from a <code>schema.prisma</code> definition. The killer feature is that when I define a model in the schema, TypeScript automatically knows the exact shape of every query result — no type drift between the database and the application code.</p>
+        <p>For example, when I call <code>prisma.recipe.findMany({include: {ingredients: true}})</code>, TypeScript knows the return type includes a <code>Recipe</code> with an <code>ingredients: Ingredient[]</code> array — because Prisma generated that type from the schema.</p>
+        <p>I also used Prisma's nested write syntax to insert a Recipe + its Ingredients + its Steps in a single atomic transaction:</p>
+        <div class="code-block"><span class="fn">prisma</span>.recipe.<span class="fn">create</span>({
+  <span class="str">data</span>: {
+    title, userId,
+    <span class="str">ingredients</span>: { create: recipe.ingredients },
+    <span class="str">steps</span>: { create: recipe.steps },
+  }
+})</div>
+        <p>This is cleaner and safer than writing three separate INSERT statements. Raw SQL would have required manual parameterization to prevent SQL injection and manual type mapping.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Why sharp for image processing?</summary>
+      <div class="qa-answer">
+        <p>sharp is a Node.js binding for libvips, a C++ image processing library. It's 100–1000x faster than pure JavaScript image libraries like Jimp because the heavy lifting happens in native code. For an API endpoint that processes one image per request, this isn't a bottleneck — but sharp also has a much better API for what I needed: resize, convert format, control quality, all in a single method chain.</p>
+        <p>The specific operation: <code>sharp(buffer).resize({width: 1024, withoutEnlargement: true}).jpeg({quality: 85}).toBuffer()</code> — takes a possibly-large WebP or PNG thumbnail, downsizes it if wider than 1024px (without upscaling small images), converts to JPEG at 85% quality, and returns a Buffer. This keeps the base64 payload to Claude under ~200 KB, which is well within Anthropic's limits and reduces API cost.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>How does Google OAuth + JWT authentication work?</summary>
+      <div class="qa-answer">
+        <p>There are two parts. First, the iOS app uses Google Sign-In SDK, which handles the OAuth flow natively — the user sees the Google consent sheet, Google issues a short-lived <strong>ID token</strong> (a signed JWT from Google). The app sends this token to my backend.</p>
+        <p>On the backend, I use Google's official <code>google-auth-library</code> to verify the token. The library fetches Google's public keys from their JWKS endpoint, verifies the token's RS256 cryptographic signature, and extracts the claims — including the user's stable Google ID (<code>sub</code>), email, name, and avatar URL. I trust this library completely — DIY verification would be a security mistake.</p>
+        <p>Once verified, I do a Prisma <code>upsert</code> — create the user if they're new, update their profile if they already exist. Then I sign my own JWT with a 30-day expiry using <code>jsonwebtoken</code>. The iOS app stores this JWT in UserDefaults (inside the shared App Group so the Share Extension can use it too) and sends it as a Bearer token on every subsequent request.</p>
+        <p>The backend's <code>requireAuth</code> middleware then calls <code>jwt.verify(token, JWT_SECRET)</code> on every protected route to validate the token.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>What is SwiftData and how did you use it?</summary>
+      <div class="qa-answer">
+        <p>SwiftData is Apple's persistence framework introduced in iOS 17 — it's the modern replacement for Core Data, with much cleaner Swift-native syntax. You define your models with <code>@Model</code>, and it handles the SQLite storage, migrations, and SwiftUI integration automatically.</p>
+        <p>In RecipeWizard, the three SwiftData models are <code>Recipe</code>, <code>Ingredient</code>, and <code>RecipeStep</code>. They live in the main app target and use <code>@Relationship</code> for the associations. SwiftUI views use <code>@Query</code> to fetch recipes with automatic sort and filter, and the view updates automatically when data changes.</p>
+        <p>One important constraint: CloudKit sync is currently disabled. CloudKit requires that all model properties are optional or have defaults, and arrays must be stored as JSON-encoded Data (not native Swift arrays) because CloudKit doesn't support arrays natively. I've documented this in the code but left it disabled pending a paid Apple Developer account.</p>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<!-- ARCHITECTURE QUESTIONS -->
+<section id="arch-q">
+  <div class="section-title">🏗️ Architecture Questions</div>
+  <div class="qa-list">
+
+    <details>
+      <summary>Why is the DB save non-blocking (fire-and-forget)?</summary>
+      <div class="qa-answer">
+        <p>The recipe extraction pipeline already takes 3–8 seconds due to yt-dlp + two Claude calls + Gemini. Adding a DB write (which takes 50–200ms) to the critical path would be noticeable latency for zero benefit from the user's perspective — they already have the recipe data in the response.</p>
+        <p>The implementation is: <code>saveRecipeForUser(userId, payload).catch(err =&gt; console.error(...))</code> — no <code>await</code>, with a catch handler that logs failures without crashing. The HTTP response fires immediately after <code>res.json(responsePayload)</code>.</p>
+        <p>The risk is that if the Node process crashes in the milliseconds between <code>res.json()</code> and the DB write completing, the recipe is lost from the DB (though the iOS app already has it locally in SwiftData). For the current scale and use case, this is an acceptable tradeoff. For a payment system, this pattern would be unacceptable — every state change would need durable recording before responding.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>How does the Share Extension work? Why can't it use SwiftData directly?</summary>
+      <div class="qa-answer">
+        <p>The Share Extension is a separate iOS process with a strict 120MB memory limit — SwiftData's full persistence stack doesn't fit within that budget. Also, because it's a different process, it doesn't share in-memory state with the main app.</p>
+        <p>The solution uses App Groups — a shared sandbox that both processes can access. When the Share Extension successfully extracts a recipe, it serializes the <code>RecipeResponse</code> as JSON and appends it to an array in <code>UserDefaults(suiteName: "group.com.recipewizard.app")["pendingRecipes"]</code>.</p>
+        <p>The main RecipeWizard app observes <code>UIApplication.willEnterForegroundNotification</code> and calls <code>processPendingRecipes()</code> on every foreground event. This function reads the pending JSON, deserializes each recipe, inserts them into SwiftData via <code>ModelContext</code>, and clears the UserDefaults queue. It's a simple producer-consumer queue pattern using shared storage as the channel.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>How would you add support for YouTube videos?</summary>
+      <div class="qa-answer">
+        <p>yt-dlp already supports YouTube — it was originally built for YouTube. Adding support would be:</p>
+        <ul>
+          <li>Add YouTube URL patterns to <code>TIKTOK_PATTERNS</code> / <code>INSTAGRAM_PATTERNS</code> in <code>urlValidator.ts</code>, or create a new <code>YOUTUBE_PATTERNS</code> array</li>
+          <li>Update <code>isSupportedUrl()</code> to include YouTube patterns</li>
+          <li>Update the extractor_key detection in <code>videoExtractor.ts</code> to recognize "Youtube" as a platform string</li>
+          <li>Test that yt-dlp returns description/thumbnail for YouTube Shorts vs regular videos</li>
+        </ul>
+        <p>The rest of the pipeline (Claude extraction, Gemini illustration, DB save) would work unchanged. The main unknown is whether YouTube caption quality is better or worse than TikTok's for recipe content.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>What happens if Claude returns malformed JSON?</summary>
+      <div class="qa-answer">
+        <p><code>parseClaudeResponse()</code> handles this in two stages. First it tries to find a <code>```json...```</code> code fence with a regex. If the fence is found, it JSON.parses the content. If the parse throws a SyntaxError, that propagates as an error — the route handler catches it and returns a 500 with the detail message.</p>
+        <p>If no fence is found, it falls back to <code>JSON.parse(text)</code> directly — handling the edge case where Claude outputs raw JSON without the fence. If that also fails, it throws "Claude response did not contain valid JSON".</p>
+        <p>The system prompt explicitly says "Respond ONLY with a valid JSON object wrapped in ```json ... ```" — this is the primary guardrail. In practice Claude follows this instruction very reliably with the exact wording used. The fallback handles the rare case where the instruction is partially ignored.</p>
+        <p>A more robust approach would be to use Anthropic's structured output / tool_use feature, which guarantees schema-valid JSON. That would eliminate the parsing step entirely but requires restructuring the prompt as a tool definition.</p>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<!-- CRITICAL THINKING -->
+<section id="critical">
+  <div class="section-title">🧠 Critical Thinking Questions</div>
+  <div class="qa-list">
+
+    <details>
+      <summary>What are the biggest limitations of this project?</summary>
+      <div class="qa-answer">
+        <p><strong>Instagram authentication:</strong> Instagram aggressively blocks yt-dlp. The workaround is manually exporting browser cookies every ~30 days and storing them as a base64 environment variable. This is a maintenance burden and would break in production without automation.</p>
+        <p><strong>Rate limiting is not distributed:</strong> express-rate-limit uses in-memory counters. If Railway scales to two instances or restarts the process, all counters reset. A Redis-backed rate limiter (using <code>rate-limit-redis</code>) would be needed for production scale.</p>
+        <p><strong>Synchronous AI calls block the event loop:</strong> The two Claude calls and one Gemini call are sequential and each takes 1–5 seconds. For high-traffic scenarios, a job queue (BullMQ + Redis) that processes extractions asynchronously would be needed, with the iOS app polling for results.</p>
+        <p><strong>Base64 in PostgreSQL:</strong> Storing large base64 illustrations in a <code>text</code> column works at small scale but has performance implications at volume. A proper solution would use cloud blob storage (S3, Vercel Blob) and store only the URL.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>How would you make this production-ready for 10,000 users?</summary>
+      <div class="qa-answer">
+        <p><strong>Move to async job processing:</strong> Instead of blocking the HTTP response on AI calls, enqueue the extraction as a job (BullMQ + Redis), return a job ID immediately, and let the iOS app poll a <code>GET /jobs/:id</code> endpoint or receive a push notification when done.</p>
+        <p><strong>CDN for images:</strong> Upload Miyazaki illustrations to Vercel Blob or S3 on generation. Store the URL, not the base64 data. This reduces PostgreSQL row size by ~1 MB per recipe and improves query performance.</p>
+        <p><strong>Redis-backed rate limiting:</strong> Replace in-memory rate limit storage with Redis so limits persist across restarts and multiple instances.</p>
+        <p><strong>yt-dlp caching:</strong> Cache yt-dlp results for the same URL for ~5 minutes. Many users might share the same viral cooking video simultaneously.</p>
+        <p><strong>Horizontal scaling:</strong> All state is in PostgreSQL (stateless app tier) so Railway can scale to multiple instances freely, except for the in-memory rate limiter (solved by Redis).</p>
+        <p><strong>Instagram cookies automation:</strong> Automate cookie refresh via a scheduled job using a headless browser or Instagram's unofficial API.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>What would you change if you could rebuild it?</summary>
+      <div class="qa-answer">
+        <p><strong>Use Anthropic's tool_use feature instead of manual JSON parsing.</strong> Instead of prompting Claude to return a ```json``` block, I'd define the recipe schema as a tool definition and force the model to call it. This guarantees valid structured output and eliminates the parseClaudeResponse() parsing step entirely.</p>
+        <p><strong>Add a job queue from day one.</strong> The synchronous AI pipeline is the biggest architectural constraint. A job queue would allow better error handling, retries, progress reporting, and horizontal scaling — all of which I'd want before going to production.</p>
+        <p><strong>Add prompt caching.</strong> The SYSTEM_PROMPT in promptBuilder.ts is the same for every request. Anthropic's prompt caching feature would cache the system prompt's token computation, reducing extraction cost by ~90% on the system prompt tokens for the second+ call in a 5-minute window.</p>
+        <p><strong>Add tests for the AI integration.</strong> There are unit tests for urlValidator and claudeService, but no integration tests that mock the Claude API and verify the full pipeline end-to-end. I'd add a set of fixture-based tests that feed known video metadata and assert on the extraction quality.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>How would you test this project?</summary>
+      <div class="qa-answer">
+        <p>The project uses Vitest for the backend. Current test coverage:</p>
+        <ul>
+          <li><strong>urlValidator.test.ts</strong> — tests isSupportedUrl() and extractUrlFromText() with various URL formats</li>
+          <li><strong>claudeService.test.ts</strong> — tests parseClaudeResponse() with different JSON formats (fenced, raw, malformed)</li>
+          <li><strong>recipes.test.ts</strong> — integration tests for the POST /extract route using supertest</li>
+        </ul>
+        <p>What I'd add: (1) Tests for videoExtractor that mock the yt-dlp subprocess output; (2) End-to-end extraction tests with a fixed response from a mocked Anthropic client, verifying that the normalization logic (nullish coalescing, confidence clamping, sortOrder assignment) works correctly; (3) Auth middleware tests for expired tokens, missing headers, and invalid signatures.</p>
+        <p>For iOS, the Share Extension logic is the hardest to test — it requires a physical device and a configured App Group. I'd add unit tests for the URL extraction regex logic in ShareViewController using XCTest.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>How is this app different from just asking ChatGPT for a recipe?</summary>
+      <div class="qa-answer">
+        <p>There are three key differences. First, <strong>source authenticity</strong> — RecipeWizard extracts the actual recipe from the video you watched, with the exact measurements and techniques that specific creator used. Asking ChatGPT for "garlic butter pasta" gives you a generic recipe that might be totally different from the one in the video you loved.</p>
+        <p>Second, <strong>structured persistence</strong> — the recipe is saved with proper structure: ingredients as a database table, steps as an ordered list, tags for filtering. It's searchable, browsable, and integrated with iOS's native UI. A ChatGPT conversation is ephemeral.</p>
+        <p>Third, <strong>zero copy-paste</strong> — the entire flow is one tap: share the video from TikTok, the recipe appears in your app. No manual transcription, no copy-pasting the caption, no reformatting. The extraction is automatic from the share sheet.</p>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<!-- CODE GOTCHAS -->
+<section id="gotchas">
+  <div class="section-title">🎯 Code Gotchas</div>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:20px">Specific tricky lines an interviewer might point to — and how to explain them:</p>
+
+  <div class="gotcha-list">
+
+    <div class="gotcha">
+      <div class="gotcha-code"><span class="kw">const</span> <span class="bi">PORT</span> = <span class="bi">parseInt</span>(process.env.<span class="bi">PORT</span> ?? <span class="bi">"8000"</span>, <span class="num">10</span>);</div>
+      <div class="gotcha-q">What does the 10 do? Why not just Number(process.env.PORT)?</div>
+      <div class="gotcha-a"><code>parseInt(str, radix)</code> — the second argument is the radix (base). Without it, some JS engines interpret strings starting with "0" as octal (base 8). With radix 10, "0100" → 100 not 64. <code>Number("8000")</code> would also work here, but <code>parseInt</code> is more explicit and handles strings with trailing non-numeric chars gracefully (e.g. "8000px" → 8000).</div>
+    </div>
+
+    <div class="gotcha">
+      <div class="gotcha-code"><span class="kw">if</span> (require.main === module) { app.listen(...); }</div>
+      <div class="gotcha-q">What does this condition check?</div>
+      <div class="gotcha-a"><code>require.main</code> is the module that Node directly executed. <code>module</code> is the current file's module object. When you run <code>node dist/index.js</code>, they're equal → server starts. When the test suite imports <code>app</code> (e.g. <code>import { app } from "../index"</code>), they're different → server doesn't auto-start. This pattern lets you export the <code>app</code> for testing with supertest without accidentally starting the server.</div>
+    </div>
+
+    <div class="gotcha">
+      <div class="gotcha-code"><span class="kw">const</span> <span class="bi">match</span> = text.<span class="fn">match</span>(<span class="bi">/```json\s*([\s\S]*?)```/</span>);</div>
+      <div class="gotcha-q">Why [\s\S]* instead of .* ? What does the ? do?</div>
+      <div class="gotcha-a">In JavaScript, <code>.</code> doesn't match newline characters by default. Since Claude's JSON response spans multiple lines, <code>.*</code> would only match within a single line and fail. <code>[\s\S]</code> means "whitespace OR non-whitespace" — which matches every character including newlines. The <code>*?</code> makes it <em>lazy</em> — it stops at the FIRST <code>```</code> it finds. Without the <code>?</code> (greedy), it would match everything between the first opening fence and the LAST closing fence in the entire text, which would be wrong if there are multiple code blocks.</div>
+    </div>
+
+    <div class="gotcha">
+      <div class="gotcha-code"><span class="kw">const</span> <span class="bi">confidence</span> = <span class="kw">typeof</span> extracted.confidence === <span class="bi">"number"</span>
+  ? <span class="bi">Math</span>.<span class="fn">max</span>(<span class="num">0</span>, <span class="bi">Math</span>.<span class="fn">min</span>(<span class="num">1</span>, extracted.confidence))
+  : <span class="num">0.5</span>;</div>
+      <div class="gotcha-q">Why not just use extracted.confidence directly?</div>
+      <div class="gotcha-a">Two reasons: (1) Claude is instructed to return a float 0.0–1.0 but LLMs can hallucinate values like 0.95 that would be fine, or values like 1.5 or -0.2 that would break the PostgreSQL Float constraint or iOS display logic. <code>Math.max(0, Math.min(1, x))</code> clamps any value to [0,1]. (2) The <code>typeof</code> check handles the case where Claude omits the confidence field entirely or returns it as a string — without it, Math.max(0, Math.min(1, undefined)) would return NaN which would fail the DB write.</div>
+    </div>
+
+    <div class="gotcha">
+      <div class="gotcha-code">args.<span class="fn">unshift</span>(<span class="bi">"--cookies"</span>, <span class="bi">resolvedCookiesPath</span>);</div>
+      <div class="gotcha-q">Why unshift instead of push?</div>
+      <div class="gotcha-a"><code>push()</code> adds to the end. <code>unshift()</code> adds to the beginning. The yt-dlp argument array ends with the URL: <code>["--dump-json", "--no-playlist", "--no-warnings", "https://..."]</code>. The URL must always be the LAST argument. <code>--cookies /path/file.txt</code> must come BEFORE the URL or yt-dlp may not parse it correctly. <code>unshift</code> prepends the two cookie arguments to the front, keeping the URL at the end.</div>
+    </div>
+
+    <div class="gotcha">
+      <div class="gotcha-code"><span class="fn">saveRecipeForUser</span>(req.user!.userId, responsePayload).<span class="fn">catch</span>(<span class="kw">err</span> =&gt; {
+  console.<span class="fn">error</span>(<span class="bi">"[recipes] Failed to save recipe to DB:"</span>, err);
+});</div>
+      <div class="gotcha-q">Why is there no await? What's the ! for?</div>
+      <div class="gotcha-a">No <code>await</code> is intentional — fire-and-forget pattern. The DB save happens asynchronously after the response is sent, so the user doesn't wait for the DB write. The <code>.catch()</code> prevents an unhandled promise rejection (which would crash the process in Node 15+). The <code>!</code> (non-null assertion operator) tells TypeScript "I know req.user is not undefined here" — this is safe because <code>requireAuth</code> middleware on line 13 guarantees req.user is set before this handler runs.</div>
+    </div>
+
+    <div class="gotcha">
+      <div class="gotcha-code"><span class="kw">const</span> <span class="bi">globalForPrisma</span> = globalThis <span class="kw">as unknown as</span> { prisma: <span class="bi">PrismaClient</span> };
+<span class="kw">export const</span> <span class="bi">prisma</span> = globalForPrisma.prisma ?? <span class="kw">new</span> <span class="bi">PrismaClient</span>();
+<span class="kw">if</span> (process.env.<span class="bi">NODE_ENV</span> !== <span class="bi">"production"</span>) globalForPrisma.prisma = prisma;</div>
+      <div class="gotcha-q">Why is the Prisma client stored on globalThis?</div>
+      <div class="gotcha-a">In development with hot-reload (ts-node-dev), every file edit causes the module to re-evaluate. Without this pattern, a new PrismaClient would be created on every reload, quickly exhausting PostgreSQL's connection pool. By storing the client on <code>globalThis</code> (which persists across module re-evaluations), the same client is reused across hot-reloads. In production, this never applies because the process doesn't reload — the <code>!== "production"</code> guard skips the globalThis write to avoid confusion.</div>
+    </div>
+
+  </div>
+</section>
+
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:13px">
+  <a href="index.html">← Study Kit Hub</a> &nbsp;·&nbsp; RecipeWizard Interview Prep
+</footer>
+</body>
+</html>
